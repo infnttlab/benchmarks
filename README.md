@@ -1,9 +1,7 @@
 # benchmarks
 
-make        
-To compile and install binaries in bin directory
+make   -   Compile and install binaries in bin directory
 
-make clean
-To remove binaries
+make clean   -   Remove binaries
 
 
