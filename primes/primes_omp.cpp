@@ -44,20 +44,18 @@ void myprimes(const unsigned int tot) {
 }
 
 int main(int argc, char* argv[])
-
 {
-minthreads = atoi(argv[1]);
-maxthreads = atoi(argv[2]);
-unsigned int tot = atoi(argv[3]);
-
-myprimes(tot);
-
-
-//milliseconds tot_ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
-//std::cout << "milliseconds = " << tot_ms.count() << std::endl;
-//std::cout << "N Threads = " << Nth << std::endl;
-//std::cout << "N Prime  = " << count << std::endl;
-
+ if (argc < 4) {
+  std::cerr << "Usage: " << argv[0] << " <MIN THREADS> <MAX THREADS> <NUMBER>" << std::endl;
+  return 1;
+ }
+ minthreads = atoi(argv[1]);
+ maxthreads = atoi(argv[2]);
+ unsigned int tot = atoi(argv[3]);
+ myprimes(tot);
+ //milliseconds tot_ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
+ //std::cout << "milliseconds = " << tot_ms.count() << std::endl;
+ //std::cout << "N Threads = " << Nth << std::endl;
+ //std::cout << "N Prime  = " << count << std::endl;
 return 0;
-
 }

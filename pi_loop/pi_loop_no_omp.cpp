@@ -21,13 +21,12 @@ double step;
 
 int main (int argc, char* argv[])
 {
- if (argc < 4) {
-      cerr << "Usage: " << argv[0] << " <THREADS> <STEPS> <VERBOSITY>" << std::endl;
-      return 1;
-  }
- int max_threads = atoi(argv[1]);
- long num_steps = atol(argv[2]);
- int verbose = atoi(argv[3]);
+ if (argc < 3) {
+  cerr << "Usage: " << argv[0] << " <STEPS> <VERBOSITY>" << std::endl;
+  return 1;
+ }
+ long num_steps = atol(argv[1]);
+ int verbose = atoi(argv[2]);
  int n_threads;
  double x, pi, sum = 0.0;
  double start_time, run_time;
