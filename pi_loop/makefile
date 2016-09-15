@@ -1,50 +1,64 @@
-HOSTNAME=$(shell hostname)
-GCCVERSION=$(shell gcc -dumpversion)
-CC=g++
-CFLAGS=-std=c++11
+#COMP=intel
+COMP=gcc
+HOSTNAME = $(shell hostname -s)
+CXXVERSION = $(shell gcc -dumpversion)
+CXXFLAGS = -std=c++11
+OMPFLAG = -fopenmp
+icpc -std=c++0x -openmp
+
+ifeq ($(COMP),intel)
+CXX=icpc
+CXXVERSION = $(shell icpc -dumpversion)
+CXXFLAGS = -std=c++0x
+OMPFLAG = -openmp
+endif
+
+#.PHONY: print_vars
+#print_vars:
+#	echo $(CXX)
 
 all: compile
 	mkdir -p bin
-	mv pi_loop_omp_$(HOSTNAME)_$(GCCVERSION) pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O0 pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O1 pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O2 pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O3 pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION) pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O0 pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O1 pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O2 pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O3 pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast bin
+	mv pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION) pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O0 pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O1 pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O2 pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O3 pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_Ofast pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)  pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O0 pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O1 pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O2 pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O3 pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_Ofast bin         
 
 compile: pi_loop_omp pi_loop_omp_O0 pi_loop_omp_O1 pi_loop_omp_O2 pi_loop_omp_O3 pi_loop_omp_Ofast pi_loop_no_omp pi_loop_no_omp_O0 pi_loop_no_omp_O1 pi_loop_no_omp_O2 pi_loop_no_omp_O3 pi_loop_no_omp_Ofast
 
 
 pi_loop_omp: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)
 
 pi_loop_omp_O0: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp -O0 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O0
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) -O0 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O0
 
 pi_loop_omp_O1: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp -O1 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O1
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) -O1 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O1
 
 pi_loop_omp_O2: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp -O2 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O2
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) -O2 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O2
 
 pi_loop_omp_O3: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp -O3 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_O3
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) -O3 pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O3
 
 pi_loop_omp_Ofast: pi_loop_omp.cpp
-	$(CC) $(CFLAGS) -fopenmp -Ofast pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) -Ofast pi_loop_omp.cpp -o pi_loop_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_Ofast
 
 pi_loop_no_omp: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)
+	$(CXX) $(CXXFLAGS) pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)
 
 pi_loop_no_omp_O0: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) pi_loop_no_omp.cpp -O0 -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O0
+	$(CXX) $(CXXFLAGS) pi_loop_no_omp.cpp -O0 -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O0
 
 pi_loop_no_omp_O1: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) -O1 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O1
+	$(CXX) $(CXXFLAGS) -O1 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O1
 
 pi_loop_no_omp_O2: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) -O2 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O2
+	$(CXX) $(CXXFLAGS) -O2 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O2
 
 pi_loop_no_omp_O3: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) -O3 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O3
+	$(CXX) $(CXXFLAGS) -O3 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_O3
 
 pi_loop_no_omp_Ofast: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) -Ofast pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast
+	$(CXX) $(CXXFLAGS) -Ofast pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(CXX)_$(CXXVERSION)_Ofast
 
 clean:
 	rm -fr bin
