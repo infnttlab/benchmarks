@@ -44,7 +44,7 @@ pi_loop_no_omp_O3: pi_loop_no_omp.cpp
 	$(CC) $(CFLAGS) -O3 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_O3
 
 pi_loop_no_omp_Ofast: pi_loop_no_omp.cpp
-	$(CC) $(CFLAGS) -O3 pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast
+	$(CC) $(CFLAGS) -Ofast pi_loop_no_omp.cpp -o pi_loop_no_omp_$(HOSTNAME)_$(GCCVERSION)_Ofast
 
 clean:
 	rm -fr bin
