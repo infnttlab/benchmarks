@@ -45,8 +45,9 @@ int main (int argc, char* argv[])
   {
    double x;
    #pragma omp single
-   if(verbose)
-    cout << "num_threads: " << omp_get_num_threads() << "  ";
+   {if(verbose)
+     cout << "num_threads: " << omp_get_num_threads() << "  ";
+   }
    #pragma omp for reduction(+:sum)
    for (int i=1;i<= num_steps; i++){
      x = (i-0.5)*step;
