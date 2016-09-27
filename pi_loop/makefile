@@ -4,7 +4,6 @@ HOSTNAME = $(shell hostname -s)
 CXXVERSION = $(shell gcc -dumpversion)
 CXXFLAGS = -std=c++11
 OMPFLAG = -fopenmp
-icpc -std=c++0x -openmp
 
 ifeq ($(COMP),intel)
 CXX=icpc
