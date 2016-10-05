@@ -62,7 +62,7 @@ void initialize(LD uliStep_max, int size, gsl_rng *r, struct globale *G) {
   int nMembranes, nMstart, nMstop, nMnum, k, kk;
   int* assignments;
   struct timeval tstart, tstop;
-  float elapsed;
+  float elapsed, ctime;
   int* stepkind;
   LD *a0c, *t2;
   int cn;
@@ -417,7 +417,9 @@ void initialize(LD uliStep_max, int size, gsl_rng *r, struct globale *G) {
   elapsed = (tstop.tv_sec-tstart.tv_sec)*1000000;
   elapsed += (tstop.tv_usec-tstart.tv_usec);
   printf ("%d: Data acquisition %d-%d in %.2f\n",id,nMstart,nMstop,elapsed/1000000);
-  
+ 
+  gettimeofday(&tstart,NULL);
+ 
   /********************************************/
   /********************************************/
   /********************************************/
@@ -501,9 +503,22 @@ void initialize(LD uliStep_max, int size, gsl_rng *r, struct globale *G) {
 	}
 	t = t3;
   }
+ /********************************************************
+ *********************************************************
+ ****                          FINE                    ***
+ *********************************************************
+ *********************************************************/
 
   //printf("%d: step4\n",id); fflush(NULL);
 
+   gettimeofday(&tstop,NULL);
+   elapsed = (tstop.tv_sec-tstart.tv_sec)*1000000;
+  elapsed += (tstop.tv_usec-tstart.tv_usec);
+  ctime = (elapsed/1000000);
+
+  printf ("%d: Data processing  %d-%d in %.2f with %d steps (%.2e per step)\n",id,nMstart,nMstop,ctime, uliStep, ctime/uliStep);
+
+  //ctime = G->iotime;
 
   for(k=nMstart;k<=nMstop;k++) {
   	kk = k-nMstart;
@@ -523,6 +538,8 @@ void initialize(LD uliStep_max, int size, gsl_rng *r, struct globale *G) {
 	fclose(G->log_fPtr[kk]); 
 	//fclose(G->rprob_fPtr[kk]);
   }
+
+//printf("%d: nStep: %d\n",id, uliStep); fflush(NULL);
 
 }
 
