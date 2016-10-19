@@ -9,7 +9,10 @@ Uso:
 ./a.out <ROW_A> <COL_A> <COL_B>
 ```
 Dove: MATRIX(ROW, COL) e COL_A == ROW_B  
-Default: A = (512,512); B = (512,512)
+Default: A = (512,512); B = (512,512)  
+#### _Troubleshooting:_
+**1. `Segmentation fault` con dimensioni >= 1000**  
+Aumentare la dimensione dello stack: `ulimit -s 20000`
 
 ---
 ### CUDA
