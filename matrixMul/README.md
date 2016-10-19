@@ -2,14 +2,14 @@
 
 ### Sequenziale
 ```sh
-gcc matrixMul_seq.c 
+gcc -O3 matrixMul_seq.c -o mtxMul.seq.O3
 ```
-Uso:
+__Uso:__
 ```sh
-./a.out <ROW_A> <COL_A> <COL_B>
+./mtxMul.seq.O3 <ROW_A> <COL_A> <COL_B>
 ```
-Dove: MATRIX(ROW, COL) e COL_A == ROW_B  
-Default: A = (512,512); B = (512,512)  
+_Dove:_ MATRIX(ROW, COL) e COL_A == ROW_B  
+_Default:_ A = (512,512); B = (512,512)  
 #### _Troubleshooting:_
 **1. `Segmentation fault` con dimensioni >= 1000**  
 Aumentare la dimensione dello stack: `ulimit -s 20000`
@@ -17,11 +17,23 @@ Aumentare la dimensione dello stack: `ulimit -s 20000`
 ---
 ### CUDA
 ```sh
-/usr/local/cuda-6.5/bin/nvcc matrixMul_cuda.cu -lm -o a.out
+nvcc -O3 matrixMul_cuda.cu -lm -o mtxMul.cuda.O3
 ```
-Uso:
+_NB:_ Se non trova il compilatore `nvcc` aggiungerci il rispettivo path (es. `/usr/local/cuda-6.5/bin/`)  
+__Uso:__
 ```sh
-./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>
+./mtxMul.cuda.O3 <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>
 ```
-Dove:  DIM_BLOCK: [1-32]; BLOCK(dimBlock, dimBlock)  
-Default: DIM_BLOCK = 16
+_Dove:_  DIM_BLOCK: [1-32]; BLOCK(dimBlock, dimBlock)  
+_Default:_ DIM_BLOCK = 16
+
+---
+### OMP
+```sh
+gcc -O3 -fopenmp matrixMul_omp.c -o mtxMul.omp.O3
+```
+__Uso:__
+```sh
+./mtxMul.omp.O3 <ROW_A> <COL_A> <COL_B> <THREADS>
+```
+_Default:_ THREADS = 2 
