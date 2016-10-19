@@ -72,13 +72,22 @@ int main(int argc, char **argv){
                         struct timeval tstart, tstop;
                         float elapsed = 0.f;
 
+                        cudaEvent_t startCUDA, stopCUDA;
+                        float timeCUDA;
+
+                        cudaEventCreate(&startCUDA);
+                        cudaEventCreate(&stopCUDA);
+
                         gettimeofday(&tstart,NULL);
+                        cudaEventRecord(startCUDA, 0);
 
                         float *matrix_a = (float*)malloc(row_a*col_a * sizeof(float));
                         float *matrix_b = (float*)malloc(col_a*col_b * sizeof(float));
                         float *matrix_c = (float*)malloc(row_a*col_b * sizeof(float));
 
-                        float *d_matrix_a; float *d_matrix_b; float *d_matrix_c;
+                        float *d_matrix_a;
+                        float *d_matrix_b;
+                        float *d_matrix_c;
 
                         cudaMalloc((void**)&d_matrix_a, (row_a*col_a * sizeof(float)));
                         cudaMalloc((void**)&d_matrix_b, (col_a*col_b * sizeof(float)));
@@ -93,7 +102,7 @@ int main(int argc, char **argv){
                         dim3 gridC( (int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock)  );
                         printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",row_a, col_a, col_a, col_b, row_a, col_b);
                         printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n", dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
-
+/*
                         // --------- test -------- //
                         int col_gA = (int)ceil(col_a/(float)dimBlock);
                         int row_gA = (int)ceil(row_a/(float)dimBlock);
@@ -112,7 +121,7 @@ int main(int argc, char **argv){
                         printf("- totThC = %d VS totElC = %d\n", totThC,col_b*row_a);
                         printf("*************************************************\n");
 
-                        matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
+*/                      matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
                         matrixFillKernel<<<gridB,block>>>(col_a,col_b,d_matrix_b);
 
 //                      cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
@@ -150,13 +159,18 @@ int main(int argc, char **argv){
                         }
 */
                         cudaFree(d_matrix_c); cudaFree(d_matrix_a); cudaFree(d_matrix_b);
+
                         free(matrix_c);
+
+                        cudaEventRecord(stopCUDA, 0);
+                        cudaEventSynchronize(stopCUDA);
+                        cudaEventElapsedTime(&timeCUDA, startCUDA, stopCUDA);
 
                         gettimeofday(&tstop,NULL);
                         printf("\nTerminated.\n");
                         elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
 
-                        printf("Data processing in %.6f s.\n\n", elapsed);
+                        printf("Data processing in %.6f s using \"gettimeofday\" and %.6f ms using \"CUDA Events\".\n\n", elapsed, timeCUDA);
                 }
         }
         return val_returned;
