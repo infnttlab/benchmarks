@@ -3,6 +3,21 @@
 #include <time.h>
 #include <math.h>
 #include <sys/time.h>
+#include <string.h>
+
+#define DEBUG 1
+
+#if DEBUG
+void printMatrix(int row, int col, float *matrix){
+        int i, j;
+        for(i=0; i<row; i++){
+                for(j=0; j<col; j++){
+                      printf("%f ", matrix[i*col+j]);
+                }
+                printf("\n");
+        }
+}
+#endif
 
 int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>\n");
@@ -29,13 +44,12 @@ void matrixMulKernel(int row_a, int col_a, int col_b, float* d_matrix_a, float* 
         int row = blockIdx.y * blockDim.y + threadIdx.y;
 
         int k;
-        float sum = 0.f;
 
+	d_matrix_c[row*col_b + col] = 0.f;
         if(col<col_b && row<row_a){
                 for(k=0; k<col_a; k++){
-                        sum += d_matrix_a[row*col_a + k] * d_matrix_b[k*col_b + col];
+                        d_matrix_c[row*col_b + col] += d_matrix_a[row*col_a + k] * d_matrix_b[k*col_b + col];
                 }
-                d_matrix_c[row*col_b + col] = sum;
         }
 }
 
@@ -70,10 +84,10 @@ int main(int argc, char **argv){
                 }
                 else{
                         struct timeval tstart, tstop;
-                        float elapsed = 0.f;
+                        double elapsed = 0.f;
 
                         cudaEvent_t startCUDA, stopCUDA;
-                        float timeCUDA;
+                        double timeCUDA;
 
                         cudaEventCreate(&startCUDA);
                         cudaEventCreate(&stopCUDA);
@@ -100,11 +114,16 @@ int main(int argc, char **argv){
                         dim3 gridA( (int)ceil(col_a/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock) );
                         dim3 gridB( (int)ceil(col_b/(float)dimBlock) , (int)ceil(col_a/(float)dimBlock)  );
                         dim3 gridC( (int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock)  );
-                        printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",row_a, col_a, col_a, col_b, row_a, col_b);
-                        printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n", dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
-/*
-                        // --------- test -------- //
-                        int col_gA = (int)ceil(col_a/(float)dimBlock);
+
+			#if DEBUG
+                        printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",
+				row_a, col_a, col_a, col_b, row_a, col_b);
+                        printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n",
+				dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),
+				(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),
+				(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
+                        
+			int col_gA = (int)ceil(col_a/(float)dimBlock);
                         int row_gA = (int)ceil(row_a/(float)dimBlock);
                         int col_gB = (int)ceil(col_b/(float)dimBlock);
                         int row_gB = (int)ceil(col_a/(float)dimBlock);
@@ -120,47 +139,32 @@ int main(int argc, char **argv){
                         printf("- totThB = %d VS totElB = %d\n", totThB,col_a*col_b);
                         printf("- totThC = %d VS totElC = %d\n", totThC,col_b*row_a);
                         printf("*************************************************\n");
+			#endif
 
-*/                      matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
+                        matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
                         matrixFillKernel<<<gridB,block>>>(col_a,col_b,d_matrix_b);
-
-//                      cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
-//                      cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
-/*
-                        int xx, yy;
-                        printf("\n## Matrix A:\n");
-                        for(xx=0; xx<row_a; xx++){
-                                for(yy=0; yy<col_a; yy++){
-                                        printf("%.2f ", matrix_a[xx*col_a+yy]);
-                                }
-                                printf("\n");
-                        }
-
-                        printf("\n## Matrix B:\n");
-                        for(xx=0; xx<col_a; xx++){
-                                for(yy=0; yy<col_b; yy++){
-                                        printf("%.2f ", matrix_b[xx*col_b+yy]);
-                                }
-                                printf("\n");
-                        }
-*/
-                        free(matrix_a); free(matrix_b);
 
                         matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
 
+			#if DEBUG
+                        cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
+                        cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
                         cudaMemcpy(matrix_c, d_matrix_c, (row_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
+			#endif
 
-  /*                            printf("\n## Matrix C:\n");
-                        for(xx=0; xx<row_a; xx++){
-                                for(yy=0; yy<col_b; yy++){
-                                        printf("%.2f ", matrix_c[xx*col_b+yy]);
-                                }
-                                printf("\n");
-                        }
-*/
                         cudaFree(d_matrix_c); cudaFree(d_matrix_a); cudaFree(d_matrix_b);
 
-                        free(matrix_c);
+			#if DEBUG
+	                //print all matrix:
+        	        printf("\n## Matrix A:\n");
+                	printMatrix(row_a, col_a, matrix_a);
+	                printf("\n## Matrix B:\n");
+        	        printMatrix(col_a, col_b, matrix_b);
+                	printf("\n## Matrix C:\n");
+	                printMatrix(row_a, col_b, matrix_c);
+        	        #endif
+
+			free(matrix_a); free(matrix_b); free(matrix_c);			
 
                         cudaEventRecord(stopCUDA, 0);
                         cudaEventSynchronize(stopCUDA);
@@ -170,7 +174,8 @@ int main(int argc, char **argv){
                         printf("\nTerminated.\n");
                         elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
 
-                        printf("Data processing in %.6f s using \"gettimeofday\" and %.6f ms using \"CUDA Events\".\n\n", elapsed, timeCUDA);
+                        printf("Data processing in %f s using \"gettimeofday\" and %f ms using \"CUDA Events\".\n\n",
+				elapsed, timeCUDA);
                 }
         }
         return val_returned;

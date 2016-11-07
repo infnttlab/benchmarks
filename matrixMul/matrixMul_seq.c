@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <string.h>
+
+#define DEBUG 1
 
 int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B>\n");
@@ -12,16 +15,26 @@ int help_func(){
 }
 
 void fill_matrix(int row, int col, float matrix[row][col]){
-        float range_max = 1.f;
         int i, j;
         for(i=0; i<row; i++){
                 for(j=0; j<col; j++){
-                        matrix[i][j] = ((float)rand()/(float)(RAND_MAX))*range_max;
-//                      printf("%f ", matrix[i][j]);
+			matrix[i][j] = 0.1;
                 }
-//              printf("\n");
         }
 }
+
+#if DEBUG
+void printMatrix(int row, int col, float matrix[row][col]){
+        int i, j;
+        for(i=0; i<row; i++){
+                for(j=0; j<col; j++){
+                      printf("%f ", matrix[i][j]);
+                }
+                printf("\n");
+        }
+}
+#endif
+
 
 int main(int argc, char **argv){
         int val_returned = 0;
@@ -46,7 +59,7 @@ int main(int argc, char **argv){
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n", row_a, col_a, row_b, col_b, row_a, col_b);
 
                 struct timeval tstart, tstop;
-                float elapsed = 0.f;
+                double elapsed = 0.0;
 
                 gettimeofday(&tstart,NULL);
 
@@ -55,31 +68,34 @@ int main(int argc, char **argv){
                 float matrix_c[row_a][col_b];
 
                 //fill matrix A and B with random float, range 0-1
-                srand(time(NULL));
 
-//              printf("\n## Matrix A:\n");
                 fill_matrix(row_a, col_a, matrix_a);
-//              printf("\n## Matrix B:\n");
                 fill_matrix(row_b, col_b, matrix_b);
 
                 //matrix multiplication
-//              printf("\n## Matrix C:\n");
                 int i, j, k;
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
-                                float sum_el = 0.f;
+				matrix_c[i][j] = 0.0;
                                 for(k=0; k<col_a; k++){
-                                        sum_el += matrix_a[i][k]*matrix_b[k][j];
+                                        matrix_c[i][j] += matrix_a[i][k]*matrix_b[k][j];
                                 }
-                                matrix_c[i][j] = sum_el;
-//                              printf("%f ", matrix_c[i][j]);
                         }
-//                      printf("\n");
                 }
                 gettimeofday(&tstop,NULL);
                 printf("\nTerminated.\n");
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                printf("Data processing in %.6f s.\n\n", elapsed);
+                printf("Data processing in %f s.\n\n", elapsed);
+
+		#if DEBUG
+		//print all matrix:
+                printf("\n## Matrix A:\n");
+                printMatrix(row_a, col_a, matrix_a);
+                printf("\n## Matrix B:\n");
+                printMatrix(col_a, col_b, matrix_b);
+                printf("\n## Matrix C:\n");
+                printMatrix(row_a, col_b, matrix_c);
+		#endif
         }
         return val_returned;
 }

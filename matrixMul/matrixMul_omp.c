@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <string.h>
+
+#define DEBUG 1
 
 int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <THREADS>\n");
@@ -12,19 +15,17 @@ int help_func(){
         return 0;
 }
 
-void fill_matrix(int row, int col, float matrix[row][col]){
- //       float range_max = 1.f;
+#if DEBUG
+void printMatrix(int row, int col, float matrix[row][col]){
         int i, j;
-        #pragma omp parallel for  shared(row,col,matrix) private (i,j)
         for(i=0; i<row; i++){
                 for(j=0; j<col; j++){
-   //                     matrix[i][j] = ((float)rand()/(float)(RAND_MAX))*range_max;
-                        matrix[i][j] =  0.1f;
-//                      printf("%f ", matrix[i][j]);
+                      printf("%f ", matrix[i][j]);
                 }
-//              printf("\n");
+		printf("\n");
         }
 }
+#endif
 
 int main(int argc, char **argv){
         int val_returned = 0;
@@ -53,9 +54,8 @@ int main(int argc, char **argv){
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n", row_a, col_a, row_b, col_b, row_a, col_b);
 
                 struct timeval tstart, tstop;
-                float elapsed = 0.f;
-
-                float start_time, run_time;
+                double elapsed = 0.0;
+                double start_time, run_time;
 
                 omp_set_num_threads(num_thread);
                 start_time = omp_get_wtime();
@@ -66,35 +66,49 @@ int main(int argc, char **argv){
                 float matrix_b[row_b][col_b];
                 float matrix_c[row_a][col_b];
 
-                //fill matrix A and B with random float, range 0-1
-//                srand(time(NULL));
+		int i, j, k;
 
-//              printf("\n## Matrix A:\n");
-                fill_matrix(row_a, col_a, matrix_a);
-//              printf("\n## Matrix B:\n");
-                fill_matrix(row_b, col_b, matrix_b);
+                //fill matrix A and B with random float, range 0-1
+		for(i=0; i<row_a; i++){
+               		for(j=0; j<col_a; j++){
+                	        matrix_a[i][j] =  0.1f;
+        	        }
+	        }
+
+//		#pragma omp parallel for  shared(row,col,matrix) private (i,j)
+		for(i=0; i<col_a; i++){
+                	for(j=0; j<col_b; j++){
+                	        matrix_b[i][j] =  0.1f;
+        	        }
+	        }
+
                 //matrix multiplication
-//              printf("\n## Matrix C:\n");
-                int i, j, k;
-                #pragma omp parallel for  shared(matrix_a,matrix_b,matrix_c) private (i,j,k)
+                
+//		#pragma omp parallel for  shared(matrix_a,matrix_b,matrix_c) private (i,j,k)
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
-                                //float sum_el = 0.f;
+				matrix_c[i][j] = 0.f;
                                 for(k=0; k<col_a; k++){
-                                       // sum_el += matrix_a[i][k]*matrix_b[k][j];
                                         matrix_c[i][j] += matrix_a[i][k]*matrix_b[k][j];
                                 }
-                                //matrix_c[i][j] = sum_el;
-//                              printf("%f ", matrix_c[i][j]);
                         }
-//                      printf("\n");
                 }
                 gettimeofday(&tstop,NULL);
                 run_time = omp_get_wtime() - start_time;
 
                 printf("\nTerminated.\n");
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                printf("Data processing with %d threads in %.6f s using \"gettimeofday\" and  %.6f s using \"OMP timer\".\n\n", num_thread,elapsed,run_time);
+                printf("Data processing with %d threads in %.10f s using \"gettimeofday\" and  %.10f s using \"OMP timer\".\n\n", num_thread,elapsed,run_time);
+
+		#if DEBUG
+		//print all matrix:
+		printf("\n## Matrix A:\n");
+		printMatrix(row_a, col_a, matrix_a);
+		printf("\n## Matrix B:\n");
+		printMatrix(col_a, col_b, matrix_b);
+		printf("\n## Matrix C:\n");
+		printMatrix(row_a, col_b, matrix_c);
+		#endif
         }
         return val_returned;
 }
