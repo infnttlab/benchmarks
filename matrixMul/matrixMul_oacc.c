@@ -17,7 +17,7 @@ void printMatrix(int row, int col, float matrix[row][col]){
 int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B>\n");
         printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n\n");
-        printf("Default: A = (512,512) B = (512,512)\n\n");
+        printf("Default: A = (512,512) B = (512,512); DEBUG = 0\n\n");
 
         return 0;
 }

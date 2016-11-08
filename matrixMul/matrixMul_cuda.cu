@@ -19,7 +19,7 @@ int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>\n");
         printf("Where:   MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n");
         printf("         DIM_BLOCK: [1-32]; BLOCK(dimBlock, dimBlock)\n\n");
-        printf("Default: A = (512,512); B = (512,512); DIM_BLOCK = 16;\n\n");
+        printf("Default: A = (512,512); B = (512,512); DIM_BLOCK = 16; DEBUG = 0\n\n");
 
         return 0;
 }
