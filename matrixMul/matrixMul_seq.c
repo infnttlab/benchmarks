@@ -4,10 +4,8 @@
 #include <sys/time.h>
 #include <string.h>
 
-#define DEBUG 1
-
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B>\n");
+        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DEBUG>\n");
         printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n\n");
         printf("Default: A = (512,512) B = (512,512)\n\n");
 
@@ -23,7 +21,6 @@ void fill_matrix(int row, int col, float matrix[row][col]){
         }
 }
 
-#if DEBUG
 void printMatrix(int row, int col, float matrix[row][col]){
         int i, j;
         for(i=0; i<row; i++){
@@ -33,8 +30,6 @@ void printMatrix(int row, int col, float matrix[row][col]){
                 printf("\n");
         }
 }
-#endif
-
 
 int main(int argc, char **argv){
         int val_returned = 0;
@@ -44,6 +39,7 @@ int main(int argc, char **argv){
         else{
                 int row_a = 512, col_a = 512;
                 int row_b = 512, col_b = 512;
+		int debug = 0;
                 if(argc >= 2){
                         // change ROW_A
                         row_a = atoi(argv[1]);
@@ -51,8 +47,10 @@ int main(int argc, char **argv){
                         if(argc >= 3){
                                 // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
                                 col_a = row_b = atoi(argv[2]);
-                                if(argc == 4){
+                                if(argc >= 4){
                                         col_b = atoi(argv[3]);
+					if(argc == 5)
+						debug = atoi(argv[4]);
                                 }
                         }
                 }
@@ -87,15 +85,15 @@ int main(int argc, char **argv){
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
                 printf("Data processing in %f s.\n\n", elapsed);
 
-		#if DEBUG
-		//print all matrix:
-                printf("\n## Matrix A:\n");
-                printMatrix(row_a, col_a, matrix_a);
-                printf("\n## Matrix B:\n");
-                printMatrix(col_a, col_b, matrix_b);
-                printf("\n## Matrix C:\n");
-                printMatrix(row_a, col_b, matrix_c);
-		#endif
+		if(debug){
+			//print all matrix:
+                	printf("\n## Matrix A:\n");
+	                printMatrix(row_a, col_a, matrix_a);
+        	        printf("\n## Matrix B:\n");
+                	printMatrix(col_a, col_b, matrix_b);
+                	printf("\n## Matrix C:\n");
+                	printMatrix(row_a, col_b, matrix_c);
+		}
         }
         return val_returned;
 }

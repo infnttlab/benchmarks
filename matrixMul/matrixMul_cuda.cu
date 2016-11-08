@@ -5,9 +5,6 @@
 #include <sys/time.h>
 #include <string.h>
 
-#define DEBUG 1
-
-#if DEBUG
 void printMatrix(int row, int col, float *matrix){
         int i, j;
         for(i=0; i<row; i++){
@@ -17,7 +14,6 @@ void printMatrix(int row, int col, float *matrix){
                 printf("\n");
         }
 }
-#endif
 
 int help_func(){
         printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>\n");
@@ -61,6 +57,7 @@ int main(int argc, char **argv){
         }
         else{
                 int row_a = 512, col_a = 512, col_b = 512;
+		int debug = 0;
                 if(argc >= 2){
                         // change ROW_A
                         row_a = atoi(argv[1]);
@@ -70,6 +67,8 @@ int main(int argc, char **argv){
                                 col_a = atoi(argv[2]);
                                 if(argc >= 4){
                                         col_b = atoi(argv[3]);
+					if(argc == 5)
+						debug = atoi(argv[4]);
                                 }
                         }
                 }
@@ -115,54 +114,54 @@ int main(int argc, char **argv){
                         dim3 gridB( (int)ceil(col_b/(float)dimBlock) , (int)ceil(col_a/(float)dimBlock)  );
                         dim3 gridC( (int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock)  );
 
-			#if DEBUG
-                        printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",
-				row_a, col_a, col_a, col_b, row_a, col_b);
-                        printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n",
-				dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),
-				(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),
-				(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
+			if(debug){
+                        	printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",
+					row_a, col_a, col_a, col_b, row_a, col_b);
+                        	printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n",
+					dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),
+					(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),
+					(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
                         
-			int col_gA = (int)ceil(col_a/(float)dimBlock);
-                        int row_gA = (int)ceil(row_a/(float)dimBlock);
-                        int col_gB = (int)ceil(col_b/(float)dimBlock);
-                        int row_gB = (int)ceil(col_a/(float)dimBlock);
-                        int col_gC = (int)ceil(col_b/(float)dimBlock);
-                        int row_gC = (int)ceil(row_a/(float)dimBlock);
+				int col_gA = (int)ceil(col_a/(float)dimBlock);
+        	                int row_gA = (int)ceil(row_a/(float)dimBlock);
+                	        int col_gB = (int)ceil(col_b/(float)dimBlock);
+                        	int row_gB = (int)ceil(col_a/(float)dimBlock);
+	                        int col_gC = (int)ceil(col_b/(float)dimBlock);
+        	                int row_gC = (int)ceil(row_a/(float)dimBlock);
 
-                        int totThA = col_gA*row_gA*dimBlock*dimBlock;
-                        int totThB = col_gB*row_gB*dimBlock*dimBlock;
-                        int totThC = col_gC*row_gC*dimBlock*dimBlock;
+	                        int totThA = col_gA*row_gA*dimBlock*dimBlock;
+        	                int totThB = col_gB*row_gB*dimBlock*dimBlock;
+                	        int totThC = col_gC*row_gC*dimBlock*dimBlock;
 
-                        printf("\n******************** TEST ***********************\n");
-                        printf("- totThA = %d VS totElA = %d\n", totThA,col_a*row_a);
-                        printf("- totThB = %d VS totElB = %d\n", totThB,col_a*col_b);
-                        printf("- totThC = %d VS totElC = %d\n", totThC,col_b*row_a);
-                        printf("*************************************************\n");
-			#endif
+	                        printf("\n******************** TEST ***********************\n");
+        	                printf("- totThA = %d VS totElA = %d\n", totThA,col_a*row_a);
+                	        printf("- totThB = %d VS totElB = %d\n", totThB,col_a*col_b);
+	                        printf("- totThC = %d VS totElC = %d\n", totThC,col_b*row_a);
+        	                printf("*************************************************\n");
+			}
 
                         matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
                         matrixFillKernel<<<gridB,block>>>(col_a,col_b,d_matrix_b);
 
                         matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
 
-			#if DEBUG
-                        cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
-                        cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
-                        cudaMemcpy(matrix_c, d_matrix_c, (row_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
-			#endif
+			if(debug){
+                        	cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
+                        	cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
+                        	cudaMemcpy(matrix_c, d_matrix_c, (row_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
+			}
 
                         cudaFree(d_matrix_c); cudaFree(d_matrix_a); cudaFree(d_matrix_b);
 
-			#if DEBUG
-	                //print all matrix:
-        	        printf("\n## Matrix A:\n");
-                	printMatrix(row_a, col_a, matrix_a);
-	                printf("\n## Matrix B:\n");
-        	        printMatrix(col_a, col_b, matrix_b);
-                	printf("\n## Matrix C:\n");
-	                printMatrix(row_a, col_b, matrix_c);
-        	        #endif
+			if(debug){
+		                //print all matrix:
+        		        printf("\n## Matrix A:\n");
+                		printMatrix(row_a, col_a, matrix_a);
+	                	printf("\n## Matrix B:\n");
+	        	        printMatrix(col_a, col_b, matrix_b);
+        	        	printf("\n## Matrix C:\n");
+	        	        printMatrix(row_a, col_b, matrix_c);
+        	        }
 
 			free(matrix_a); free(matrix_b); free(matrix_c);			
 
