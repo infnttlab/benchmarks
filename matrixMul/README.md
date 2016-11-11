@@ -45,7 +45,7 @@ _Default:_ THREADS = 2
 mpicc -O3 matrixMul_mpi.c -o mtxMul.mpi.O3
 mpirun -np <P> ./mtxMul.mpi.O3 <ROW_A> <COL_A> <COL_B> <DEBUG>
 ```
-_Dove:_  P: n processi paralleli; <COL_A> divisibile per <P>
+_Dove:_  P: n processi paralleli; COL_A divisibile per P
 
 
 
