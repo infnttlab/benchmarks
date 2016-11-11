@@ -12,20 +12,20 @@ int help_func(){
         return 0;
 }
 
-void fill_matrix(int row, int col, float matrix[row][col]){
+void fill_matrix(int row, int col, float *matrix){
         int i, j;
         for(i=0; i<row; i++){
                 for(j=0; j<col; j++){
-			matrix[i][j] = 0.1;
+			matrix[i*col+j] = 0.1f;
                 }
         }
 }
 
-void printMatrix(int row, int col, float matrix[row][col]){
+void printMatrix(int row, int col, float *matrix){
         int i, j;
         for(i=0; i<row; i++){
                 for(j=0; j<col; j++){
-                      printf("%f ", matrix[i][j]);
+                      printf("%f ", matrix[i*col+j]);
                 }
                 printf("\n");
         }
@@ -54,16 +54,21 @@ int main(int argc, char **argv){
                                 }
                         }
                 }
-                printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n", row_a, col_a, row_b, col_b, row_a, col_b);
+                printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
+			row_a, col_a, row_b, col_b, row_a, col_b);
 
                 struct timeval tstart, tstop;
                 double elapsed = 0.0;
 
                 gettimeofday(&tstart,NULL);
 
-                float matrix_a[row_a][col_a];
-                float matrix_b[row_b][col_b];
-                float matrix_c[row_a][col_b];
+                float *matrix_a;
+                float *matrix_b;
+                float *matrix_c;
+
+		matrix_a = (float*)malloc(row_a*col_a*sizeof(float));
+		matrix_b = (float*)malloc(col_a*col_b*sizeof(float));
+		matrix_c = (float*)malloc(row_a*col_b*sizeof(float));
 
                 //fill matrix A and B with random float, range 0-1
 
@@ -74,26 +79,29 @@ int main(int argc, char **argv){
                 int i, j, k;
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
-				matrix_c[i][j] = 0.0;
+				matrix_c[i*col_b+j] = 0.f;
                                 for(k=0; k<col_a; k++){
-                                        matrix_c[i][j] += matrix_a[i][k]*matrix_b[k][j];
+                                        matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
                                 }
                         }
                 }
+
+		if(debug){
+                        //print all matrix:
+                        printf("\n## Matrix A:\n");
+                        printMatrix(row_a, col_a, matrix_a);
+                        printf("\n## Matrix B:\n");
+                        printMatrix(col_a, col_b, matrix_b);
+                        printf("\n## Matrix C:\n");
+                        printMatrix(row_a, col_b, matrix_c);
+                }
+
+		free(matrix_a); free(matrix_b); free(matrix_c);
+
                 gettimeofday(&tstop,NULL);
                 printf("\nTerminated.\n");
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
                 printf("Data processing in %f s.\n\n", elapsed);
-
-		if(debug){
-			//print all matrix:
-                	printf("\n## Matrix A:\n");
-	                printMatrix(row_a, col_a, matrix_a);
-        	        printf("\n## Matrix B:\n");
-                	printMatrix(col_a, col_b, matrix_b);
-                	printf("\n## Matrix C:\n");
-                	printMatrix(row_a, col_b, matrix_c);
-		}
         }
         return val_returned;
 }
