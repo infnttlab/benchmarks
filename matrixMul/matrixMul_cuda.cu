@@ -16,7 +16,7 @@ void printMatrix(int row, int col, float *matrix){
 }
 
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK>\n");
+        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK> <DEBUG>\n");
         printf("Where:   MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n");
         printf("         DIM_BLOCK: [1-32]; BLOCK(dimBlock, dimBlock)\n\n");
         printf("Default: A = (512,512); B = (512,512); DIM_BLOCK = 16; DEBUG = 0\n\n");
@@ -67,8 +67,8 @@ int main(int argc, char **argv){
                                 col_a = atoi(argv[2]);
                                 if(argc >= 4){
                                         col_b = atoi(argv[3]);
-					if(argc == 5)
-						debug = atoi(argv[4]);
+					if(argc == 6)
+						debug = atoi(argv[5]);
                                 }
                         }
                 }
@@ -82,17 +82,27 @@ int main(int argc, char **argv){
                         val_returned =  help_func();
                 }
                 else{
-                        struct timeval tstart, tstop;
-                        double elapsed = 0.f;
+                        cudaEvent_t start_all, end_all,
+					start_fill, end_fill,
+					start_mm, end_mm,
+					start_free, end_free;
 
-                        cudaEvent_t startCUDA, stopCUDA;
-                        double timeCUDA;
+                        //cudaEventCreate(&startCUDA);
+                        //cudaEventCreate(&stopCUDA);
+			
+			cudaEventCreate(&start_all);
+                        cudaEventCreate(&end_all);
+			cudaEventCreate(&start_fill);
+                        cudaEventCreate(&end_fill);
+			cudaEventCreate(&start_mm);
+                        cudaEventCreate(&end_mm);
+			cudaEventCreate(&start_free);
+                        cudaEventCreate(&end_free);
 
-                        cudaEventCreate(&startCUDA);
-                        cudaEventCreate(&stopCUDA);
+                        //gettimeofday(&tstart,NULL);
+                        //cudaEventRecord(startCUDA, 0);
 
-                        gettimeofday(&tstart,NULL);
-                        cudaEventRecord(startCUDA, 0);
+                        cudaEventRecord(start_all, 0);
 
                         float *matrix_a = (float*)malloc(row_a*col_a * sizeof(float));
                         float *matrix_b = (float*)malloc(col_a*col_b * sizeof(float));
@@ -114,14 +124,21 @@ int main(int argc, char **argv){
                         dim3 gridB( (int)ceil(col_b/(float)dimBlock) , (int)ceil(col_a/(float)dimBlock)  );
                         dim3 gridC( (int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock)  );
 
-			if(debug){
-                        	printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",
+			cudaEventRecord(end_all, 0);
+                        cudaEventSynchronize(end_all);
+			float timeAlloc;
+                        cudaEventElapsedTime(&timeAlloc, start_all, end_all);
+
+                        printf("\n### Matrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d);\n",
 					row_a, col_a, col_a, col_b, row_a, col_b);
-                        	printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n",
-					dimBlock, (int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),
+                        printf("### dimBlock = %d; gridA(%d,%d); gridB(%d,%d); gridC(%d,%d);\n",
+					dimBlock,
+					(int)ceil(col_a/(float)dimBlock),(int)ceil(row_a/(float)dimBlock),
 					(int)ceil(col_b/(float)dimBlock),(int)ceil(col_a/(float)dimBlock),
-					(int)ceil(col_b/(float)dimBlock) , (int)ceil(row_a/(float)dimBlock));
-                        
+					(int)ceil(col_b/(float)dimBlock),(int)ceil(row_a/(float)dimBlock)
+				);
+
+			if(debug){                        
 				int col_gA = (int)ceil(col_a/(float)dimBlock);
         	                int row_gA = (int)ceil(row_a/(float)dimBlock);
                 	        int col_gB = (int)ceil(col_b/(float)dimBlock);
@@ -140,20 +157,43 @@ int main(int argc, char **argv){
         	                printf("*************************************************\n");
 			}
 
+
+			cudaEventRecord(start_fill, 0);
+
                         matrixFillKernel<<<gridA,block>>>(row_a,col_a,d_matrix_a);
                         matrixFillKernel<<<gridB,block>>>(col_a,col_b,d_matrix_b);
 
+			cudaEventRecord(end_fill, 0);
+                        cudaEventSynchronize(end_fill);
+			float timeFill;
+                        cudaEventElapsedTime(&timeFill, start_fill, end_fill);
+
+			//Performs warmup operation
+			printf("\nPreforming warmup...\n");
+			matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
+
+			printf("\nComputing matrix multimplication...\n");
+			cudaEventRecord(start_mm, 0);
                         matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
 
+			cudaEventRecord(end_mm, 0);
+                        cudaEventSynchronize(end_mm);
+			float timeMtxMul;
+                        cudaEventElapsedTime(&timeMtxMul, start_mm, end_mm);
+
+/*
 			if(debug){
                         	cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
                         	cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
                         	cudaMemcpy(matrix_c, d_matrix_c, (row_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
 			}
+*/
+
+			cudaEventRecord(start_free, 0);
 
                         cudaFree(d_matrix_c); cudaFree(d_matrix_a); cudaFree(d_matrix_b);
 
-			if(debug){
+/*			if(debug){
 		                //print all matrix:
         		        printf("\n## Matrix A:\n");
                 		printMatrix(row_a, col_a, matrix_a);
@@ -162,19 +202,20 @@ int main(int argc, char **argv){
         	        	printf("\n## Matrix C:\n");
 	        	        printMatrix(row_a, col_b, matrix_c);
         	        }
-
+*/
 			free(matrix_a); free(matrix_b); free(matrix_c);			
 
-                        cudaEventRecord(stopCUDA, 0);
-                        cudaEventSynchronize(stopCUDA);
-                        cudaEventElapsedTime(&timeCUDA, startCUDA, stopCUDA);
+			cudaEventRecord(end_free, 0);
+                        cudaEventSynchronize(end_free);
+			float timeFree;
+                        cudaEventElapsedTime(&timeFree, start_free, end_free);
 
-                        gettimeofday(&tstop,NULL);
                         printf("\nTerminated.\n");
-                        elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
 
-                        printf("Data processing in %f s using \"gettimeofday\" and %f ms using \"CUDA Events\".\n\n",
-				elapsed, timeCUDA);
+			printf("\nA. timeAllocation: %f ms;\nB. timeComputation: %f ms (fill: %f ms, matrixMul: %f ms);\nC. timeFree: %f ms;\nD. TOTAL: %f ms\n", timeAlloc, timeFill+timeMtxMul, timeFill, timeMtxMul, timeFree, timeAlloc+timeFill+timeMtxMul+timeFree);
+			double flops4mtxmul = 2.0*(double)row_a*(double)col_a*(double)col_b;
+			double gigaFlops = (flops4mtxmul * 1.0e-9f) / (timeMtxMul / 1000.0f);
+			printf("\nPerformance: %f GFlop/s; Time: %f ms; Flop: %f\n\n", gigaFlops, timeMtxMul, flops4mtxmul);
                 }
         }
         return val_returned;
