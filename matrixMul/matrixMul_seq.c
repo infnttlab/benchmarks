@@ -57,10 +57,13 @@ int main(int argc, char **argv){
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, row_b, col_b, row_a, col_b);
 
-                struct timeval tstart, tstop;
-                double elapsed = 0.0;
+                struct timeval start, stop;
+                double t_iniz = 0.0;
+		double t_fill = 0.0;
+		double t_mtxm = 0.0;
+		double t_free = 0.0;
 
-                gettimeofday(&tstart,NULL);
+                gettimeofday(&start,NULL);
 
                 float *matrix_a;
                 float *matrix_b;
@@ -74,9 +77,26 @@ int main(int argc, char **argv){
 
                 fill_matrix(row_a, col_a, matrix_a);
                 fill_matrix(row_b, col_b, matrix_b);
+		
+		gettimeofday(&stop,NULL);
+		t_iniz = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);
 
                 //matrix multiplication
                 int i, j, k;
+
+		//performs warmup operations
+		printf("\nPerforming wermup...\n");
+		for(i=0; i<row_a; i++){
+                        for(j=0; j<col_b; j++){
+                                matrix_c[i*col_b+j] = 0.f;
+                                for(k=0; k<col_a; k++){
+                                        matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
+                                }
+                        }
+                }
+
+		gettimeofday(&start,NULL);
+		printf("\nComputing matrix multiplication...\n");
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
 				matrix_c[i*col_b+j] = 0.f;
@@ -85,6 +105,8 @@ int main(int argc, char **argv){
                                 }
                         }
                 }
+		gettimeofday(&stop,NULL);
+		t_mtxm = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);		
 
 		if(debug){
                         //print all matrix:
@@ -96,12 +118,17 @@ int main(int argc, char **argv){
                         printMatrix(row_a, col_b, matrix_c);
                 }
 
+		gettimeofday(&start,NULL);
 		free(matrix_a); free(matrix_b); free(matrix_c);
+                gettimeofday(&stop,NULL);
+		t_free = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);
 
-                gettimeofday(&tstop,NULL);
                 printf("\nTerminated.\n");
-                elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                printf("Data processing in %f s.\n\n", elapsed);
+                printf("Data processing in %f s.\n", t_iniz+t_mtxm+t_free);
+
+		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
+		double gigaFlop = (flops * 1.0e-9f) / t_mtxm;
+		printf("\nPerformance: %f GFlop/s, Time: %f ms, Flop: %.0f\n\n", gigaFlop, t_mtxm, flops);
         }
         return val_returned;
 }
