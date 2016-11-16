@@ -53,14 +53,10 @@ int main(int argc, char **argv){
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, row_b, col_b, row_a, col_b);
 
-                struct timeval tstart, tstop;
-                double elapsed = 0.0;
-                double start_time, run_time;
+                double start_time, run_time, start_mm, t_mm, t_warm;
 
                 omp_set_num_threads(num_thread);
                 start_time = omp_get_wtime();
-
-                gettimeofday(&tstart,NULL);
 
                 float *matrix_a;
                 float *matrix_b;
@@ -88,6 +84,22 @@ int main(int argc, char **argv){
         	        }
 	           }
 
+		   #pragma omp master
+                         start_mm = omp_get_wtime();
+                   #pragma omp for schedule(static)
+                   for(i=0; i<row_a; i++){
+                        for(j=0; j<col_b; j++){
+                                matrix_c[i*col_b+j] = 0.f;
+                                for(k=0; k<col_a; k++){
+                                        matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
+                                }
+                        }
+                   }
+                   #pragma omp master
+                        t_warm = omp_get_wtime() - start_mm;
+
+		   #pragma omp master
+			 start_mm = omp_get_wtime();
 		   #pragma omp for schedule(static) 
                    for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
@@ -97,6 +109,8 @@ int main(int argc, char **argv){
                                 }
                         }
                    }
+		   #pragma omp master
+			t_mm = omp_get_wtime() - start_mm;
 		}
 
 		if(debug){
@@ -111,12 +125,14 @@ int main(int argc, char **argv){
 
 		free(matrix_a); free(matrix_b); free(matrix_c);
 		
-                gettimeofday(&tstop,NULL);
                 run_time = omp_get_wtime() - start_time;
 
                 printf("\nTerminated.\n");
-                elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                printf("Data processing with %d threads in %.10f s using \"gettimeofday\" and  %.10f s using \"OMP timer\".\n\n", num_thread,elapsed,run_time);
+                printf("Data processing with %d threads in %f s (t_warm = %f ) using \"OMP timer\".\n\n", num_thread, run_time-t_warm, t_warm);
+		
+		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
+		double gigaflop = (flops * 1.0e-9f) / t_mm;
+		printf("Performance: %f GFlop/s, Time: %f s, Flops: %.0f\n\n", gigaflop, t_mm, flops);
         }
         return val_returned;
 }
