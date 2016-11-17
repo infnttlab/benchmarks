@@ -6,7 +6,7 @@
 #include "helper_string.h"
 
 int help_func(){
-        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  (matrix(row,col), ColumnsA = RowsB)\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  | matrix(row,col), ColumnsA = RowsB\n");
 	printf("         -w=WarmUpData\n");
 	printf("         -v=Verbose\n\n");
         printf("Default: A = (512,512) B = (512,512); WARMUP = 0; VERBOSE = 0\n\n");
@@ -36,7 +36,7 @@ void printMatrix(int row, int col, float *matrix){
 int main(int argc, char **argv){
         int val_returned = 0;
 
-	if (checkCmdLineFlag(argc, (const char **)argv, "help") || checkCmdLineFlag(argc, (const char **)argv, "h")){
+	if (argc == 2 && ( (strcmp(argv[1], "--help")==0) || (strcmp(argv[1], "-h")==0) )){
                 val_returned = help_func();
         }
         else{

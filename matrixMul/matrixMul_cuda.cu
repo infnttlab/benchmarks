@@ -4,6 +4,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <string.h>
+#include "helper_string.h"
 
 void printMatrix(int row, int col, float *matrix){
         int i, j;
@@ -16,13 +17,15 @@ void printMatrix(int row, int col, float *matrix){
 }
 
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DIM_BLOCK> <DEBUG>\n");
-        printf("Where:   MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n");
-        printf("         DIM_BLOCK: [1-32]; BLOCK(dimBlock, dimBlock)\n\n");
-        printf("Default: A = (512,512); B = (512,512); DIM_BLOCK = 16; DEBUG = 0\n\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB\n");
+	printf("         -db=DimBlock                             | DimBlock(in threads): [1-32], block(DimBlock, DimBlock)\n");
+        printf("         -w=WarmUpData\n");
+        printf("         -v=Verbose\n\n");
+        printf("Default: A = (512,512) B = (512,512); DIM_BLOCK = 16; WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }
+
 
 __global__
 void matrixFillKernel(int rowMax, int colMax,  float *d_matrix){
@@ -57,26 +60,28 @@ int main(int argc, char **argv){
         }
         else{
                 int row_a = 512, col_a = 512, col_b = 512;
-		int debug = 0;
-                if(argc >= 2){
-                        // change ROW_A
-                        row_a = atoi(argv[1]);
+		int debug = 0, perf = 0;
+		int dimBlock = 16;
 
-                        if(argc >= 3){
-                                // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
-                                col_a = atoi(argv[2]);
-                                if(argc >= 4){
-                                        col_b = atoi(argv[3]);
-					if(argc == 6)
-						debug = atoi(argv[5]);
-                                }
-                        }
+		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
+                        row_a = getCmdLineArgumentInt(argc, (const char **)argv, "rA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cA")){
+                        col_a = getCmdLineArgumentInt(argc, (const char **)argv, "cA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cB")){
+                        col_b = getCmdLineArgumentInt(argc, (const char **)argv, "cB");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "w")){
+                        perf = getCmdLineArgumentInt(argc, (const char **)argv, "w");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "v")){
+                        debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
+                }
+		if (checkCmdLineFlag(argc, (const char **)argv, "db")){
+                        dimBlock = getCmdLineArgumentInt(argc, (const char **)argv, "db");
                 }
 
-                int dimBlock = 16;
-                if(argc >= 5){
-                        dimBlock = atoi(argv[4]);
-                }
 
                 if(dimBlock>32){
                         val_returned =  help_func();
@@ -168,9 +173,11 @@ int main(int argc, char **argv){
 			float timeFill;
                         cudaEventElapsedTime(&timeFill, start_fill, end_fill);
 
-			//Performs warmup operation
-			printf("\nPreforming warmup...\n");
-			matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
+			if(perf){
+				//Performs warmup operation
+				printf("\nPreforming warmup...\n");
+				matrixMulKernel<<<gridC,block>>>(row_a,col_a,col_b,d_matrix_a,d_matrix_b,d_matrix_c);
+			}
 
 			printf("\nComputing matrix multimplication...\n");
 			cudaEventRecord(start_mm, 0);

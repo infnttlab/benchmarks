@@ -4,11 +4,14 @@
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
+#include "helper_string.h"
 
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <THREADS> <DEBUG>\n");
-        printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n\n");
-        printf("Default: A = (512,512) B = (512,512); THREADS = 2; DEBUG = 0\n\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  | matrix(row,col), ColumnsA = RowsB\n");
+	printf("         -p=Threads\n");
+        printf("         -w=WarmUpData\n");
+        printf("         -v=Verbose\n\n");
+        printf("Default: A = (512,512) B = (512,512); THREADS = 2; WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }
@@ -29,27 +32,30 @@ int main(int argc, char **argv){
                 val_returned = help_func();
         }
         else{
-		int debug = 0;
+		int debug = 0, perf = 0;
                 int num_thread = 2;
                 int row_a = 512, col_a = 512;
                 int row_b = 512, col_b = 512;
-                if(argc >= 2){
-                        // change ROW_A
-                        row_a = atoi(argv[1]);
-
-                        if(argc >= 3){
-                                // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
-                                col_a = row_b = atoi(argv[2]);
-                                if(argc >= 4){
-                                        col_b = atoi(argv[3]);
-                                        if(argc >= 5){
-                                                num_thread = atoi(argv[4]);
-						if(argc == 6)
-							debug = atoi(argv[5]);
-                                        }
-                                }
-                        }
+		
+		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
+                        row_a = getCmdLineArgumentInt(argc, (const char **)argv, "rA");
                 }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cA")){
+                        col_a = getCmdLineArgumentInt(argc, (const char **)argv, "cA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cB")){
+                        col_b = getCmdLineArgumentInt(argc, (const char **)argv, "cB");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "w")){
+                        perf = getCmdLineArgumentInt(argc, (const char **)argv, "w");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "v")){
+                        debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
+                }
+		if (checkCmdLineFlag(argc, (const char **)argv, "p")){
+                        num_thread = getCmdLineArgumentInt(argc, (const char **)argv, "p");
+                }
+
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, row_b, col_b, row_a, col_b);
 
@@ -84,19 +90,21 @@ int main(int argc, char **argv){
         	        }
 	           }
 
-		   #pragma omp master
-                         start_mm = omp_get_wtime();
-                   #pragma omp for schedule(static)
-                   for(i=0; i<row_a; i++){
-                        for(j=0; j<col_b; j++){
-                                matrix_c[i*col_b+j] = 0.f;
-                                for(k=0; k<col_a; k++){
-                                        matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
-                                }
-                        }
-                   }
-                   #pragma omp master
-                        t_warm = omp_get_wtime() - start_mm;
+		   if(perf){
+		   	#pragma omp master
+                        	 start_mm = omp_get_wtime();
+                   	#pragma omp for schedule(static)
+                   	for(i=0; i<row_a; i++){
+                        	for(j=0; j<col_b; j++){
+                                	matrix_c[i*col_b+j] = 0.f;
+                                	for(k=0; k<col_a; k++){
+                                        	matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
+                                	}
+                        	}
+                   	}
+                   	#pragma omp master
+                        	t_warm = omp_get_wtime() - start_mm;
+		   }
 
 		   #pragma omp master
 			 start_mm = omp_get_wtime();
@@ -128,7 +136,10 @@ int main(int argc, char **argv){
                 run_time = omp_get_wtime() - start_time;
 
                 printf("\nTerminated.\n");
-                printf("Data processing with %d threads in %f s (t_warm = %f ) using \"OMP timer\".\n\n", num_thread, run_time-t_warm, t_warm);
+		if(perf)
+                	printf("Data processing with %d threads in %f s (t_warm = %f ) using \"OMP timer\".\n\n", num_thread, run_time-t_warm, t_warm);
+		else
+			printf("Data processing with %d threads in %f s using \"OMP timer\".\n\n", num_thread, run_time);
 		
 		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
 		double gigaflop = (flops * 1.0e-9f) / t_mm;

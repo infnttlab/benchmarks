@@ -3,6 +3,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
+#include "helper_string.h"
 
 void printMatrix(int row, int col, float *matrix){
         int i, j;
@@ -15,9 +16,10 @@ void printMatrix(int row, int col, float *matrix){
 }
 
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B>\n");
-        printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n\n");
-        printf("Default: A = (512,512) B = (512,512); DEBUG = 0\n\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  | matrix(row,col), ColumnsA = RowsB\n");
+        printf("         -w=WarmUpData\n");
+        printf("         -v=Verbose\n\n");
+        printf("Default: A = (512,512) B = (512,512); WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }
@@ -40,26 +42,31 @@ int main(int argc, char **argv){
         else{
                 int row_a = 512, col_a = 512;
                 int row_b = 512, col_b = 512;
-		int debug = 0;
-                if(argc >= 2){
-                        // change ROW_A
-                        row_a = atoi(argv[1]);
+		int debug = 0, perf = 0;
 
-                        if(argc >= 3){
-                                // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
-                                col_a = row_b = atoi(argv[2]);
-                                if(argc >= 4){
-                                        col_b = atoi(argv[3]);
-					if(argc == 5)
-						debug = atoi(argv[4]);
-                                }
-                        }
+		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
+                        row_a = getCmdLineArgumentInt(argc, (const char **)argv, "rA");
                 }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cA")){
+                        col_a = getCmdLineArgumentInt(argc, (const char **)argv, "cA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cB")){
+                        col_b = getCmdLineArgumentInt(argc, (const char **)argv, "cB");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "w")){
+                        perf = getCmdLineArgumentInt(argc, (const char **)argv, "w");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "v")){
+                        debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
+                }
+
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, row_b, col_b, row_a, col_b);
 
-                struct timeval tstart, tstop;
-                double elapsed = 0.f;
+                struct timeval tstart, tstop, mm_s, mm_e;
+                double elapsed = 0.0;
+		double t_mm = 0.0;
+		double t_w = 0.0;
 
                 gettimeofday(&tstart,NULL);
 
@@ -78,6 +85,24 @@ int main(int argc, char **argv){
                 
 		//matrix multiplication
 		int i, j, k;
+
+		if(perf){
+			//Performs warmup operations
+			gettimeofday(&mm_s,NULL);
+			#pragma acc kernels copyin(matrix_a,matrix_b) copy(matrix_c)
+                	for(i=0; i<row_a; i++){
+                        	for(j=0; j<col_b; j++){
+                                	matrix_c[i*col_b+j] = 0.f;
+                                	for(k=0; k<col_a; k++){
+                                        	matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
+                                	}
+                        	}
+                	}
+			gettimeofday(&mm_e,NULL);
+			t_w = (mm_e.tv_sec - mm_s.tv_sec) + ((mm_e.tv_usec - mm_s.tv_usec)/1000000.0);
+		}
+
+		gettimeofday(&mm_s,NULL);
                 #pragma acc kernels copyin(matrix_a,matrix_b) copy(matrix_c)
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
@@ -87,6 +112,8 @@ int main(int argc, char **argv){
                                 }
                         }
                 }
+		gettimeofday(&mm_e,NULL);
+		t_m = (mm_e.tv_sec - mm_s.tv_sec) + ((mm_e.tv_usec - mm_s.tv_usec)/1000000.0);
 
 		if(debug){
                         //print all matrix:
@@ -103,7 +130,14 @@ int main(int argc, char **argv){
                 gettimeofday(&tstop,NULL);
                 printf("\nTerminated.\n");
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                printf("Data processing in %f s.\n\n", elapsed);
+		if(perf)
+                	printf("Data processing in %f s (warmup time: %f s).\n", elapsed-w_t, w_t);
+		else
+			printf("Data processing in %f s.\n", elapsed);
+
+		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
+		double giga = (flops*1.0e-9f)/m_t;
+		printf("\nProcessing: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", giga, t_m, flops);
         }
         return val_returned;
 }
