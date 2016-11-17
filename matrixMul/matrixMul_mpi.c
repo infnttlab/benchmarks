@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
   		}
 
   		float *rowsAxProc;
-  		float *rowsCxProc;\
+  		float *rowsCxProc;
 
   		rowsAxProc = (float*)malloc(nProc*col_a*sizeof(float));
   		rowsCxProc = (float*)malloc(nProc*col_b*sizeof(float));
