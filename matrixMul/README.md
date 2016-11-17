@@ -56,10 +56,12 @@ _Default:_ THREADS = 2
 ---
 ### MPI
 ```sh
-mpicc -O3 matrixMul_mpi.c -o mtxMul.mpi.O3
-mpirun -np <P> ./mtxMul.mpi.O3 <ROW_A> <COL_A> <COL_B> <DEBUG>
+mpic++ -O3 matrixMul_mpi.c -o mtxMul.mpi.O3
+
+Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB divisibile per num.processi
+         -w=WarmUpData
+         -v=Verbose
 ```
-_Dove:_  P: n processi paralleli; COL_A divisibile per P
 
 
 

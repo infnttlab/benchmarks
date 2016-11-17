@@ -4,13 +4,14 @@
 #include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
+#include "helper_string.h"
 
 
 int help_func(){
-        printf("\nUsage: mpirun -np <P> ./a.out <ROW_A> <COL_A> <COL_B> <DEBUG>\n");
-        printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>; <P> : parallel process\n");
-	printf("       <COL_A> must be divisible by <P>\n\n");
-        printf("Default: A = (512,512) B = (512,512); DEBUG = 0\n\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  | matrix(row,col), ColumnsA = RowsB divisibile per num.processi\n");
+        printf("         -w=WarmUpData\n");
+        printf("         -v=Verbose\n\n");
+        printf("Default: A = (512,512) B = (512,512); WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }
@@ -54,20 +55,22 @@ int main(int argc, char *argv[]){
 	else{
 		int row_a = 512, col_a = 512;
                 int row_b = 512, col_b = 512;
-                int debug = 0;
-                if(argc >= 2){
-                        // change ROW_A
-                        row_a = atoi(argv[1]);
+                int debug = 0, perf = 0;
 
-                        if(argc >= 3){
-                                // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
-                                col_a = row_b = atoi(argv[2]);
-                                if(argc >= 4){
-                                        col_b = atoi(argv[3]);
-                                        if(argc == 5)
-                                                debug = atoi(argv[4]);
-                                }
-                        }
+		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
+                        row_a = getCmdLineArgumentInt(argc, (const char **)argv, "rA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cA")){
+                        col_a = getCmdLineArgumentInt(argc, (const char **)argv, "cA");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "cB")){
+                        col_b = getCmdLineArgumentInt(argc, (const char **)argv, "cB");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "w")){
+                        perf = getCmdLineArgumentInt(argc, (const char **)argv, "w");
+                }
+                if (checkCmdLineFlag(argc, (const char **)argv, "v")){
+                        debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
                 }
 
 		if (row_a%nProc != 0) {
@@ -80,13 +83,14 @@ int main(int argc, char *argv[]){
 			 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 				row_a, col_a, row_b, col_b, row_a, col_b);
 
-		struct timeval tstart, tstop;
-		double elapsed;
+		//struct timeval tstart, tstop;
+		double start_tot, time_tot, s_mm, time_wrm, time_mm,  delta_wrm, delta_mm, elapsed;
+		double sum_tot = 0.0, sum_wrm = 0.0, sum_mm = 0.0;
 		if(myrank == 0){
-			elapsed = 0.0;
-			gettimeofday(&tstart,NULL);
+			elapsed = delta_mm = delta_wrm = 0.0;
 		}
 
+		start_tot = MPI_Wtime();
   		float *matrix_a;
   		float *matrix_b;
   		float *matrix_c;
@@ -100,7 +104,7 @@ int main(int argc, char *argv[]){
   		}
 
   		float *rowsAxProc;
-  		float *rowsCxProc;
+  		float *rowsCxProc;\
 
   		rowsAxProc = (float*)malloc(nProc*col_a*sizeof(float));
   		rowsCxProc = (float*)malloc(nProc*col_b*sizeof(float));
@@ -108,6 +112,22 @@ int main(int argc, char *argv[]){
   		MPI_Bcast (matrix_b, col_a*col_b, MPI_FLOAT, 0, MPI_COMM_WORLD);
   		MPI_Scatter (matrix_a, nProc*col_a, MPI_FLOAT, rowsAxProc, nProc*col_a, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
+		if(perf){
+			s_mm = MPI_Wtime();
+			//Performs warmup operations:
+			for(i=0; i<nProc; i++){
+                        	for(j=0; j<col_b; j++){
+                                	rowsCxProc[i*col_b+j] = 0.f;
+                                	for(k=0; k<col_a; k++){
+                                        	rowsCxProc[i*col_b+j] += rowsAxProc[i*col_a+k]*matrix_b[k*col_b+j];
+                                	}
+                        	}
+                	}
+			time_wrm = MPI_Wtime() - s_mm;
+		}
+
+		s_mm = MPI_Wtime();
+		//computing matrix multipliaction:
 		for(i=0; i<nProc; i++){
 			for(j=0; j<col_b; j++){
 				rowsCxProc[i*col_b+j] = 0.f;
@@ -121,6 +141,7 @@ int main(int argc, char *argv[]){
 				}
 			}
   		}
+		time_mm = MPI_Wtime() - s_mm;
 
  		free(rowsAxProc);
 
@@ -145,12 +166,28 @@ int main(int argc, char *argv[]){
   		}
 
   		free(matrix_b);
+		time_tot = MPI_Wtime() - start_tot;
+
+		MPI_Reduce(&time_tot, &sum_tot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD); 
+		MPI_Reduce(&time_mm, &sum_mm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		if(perf)
+			MPI_Reduce(&time_wrm, &sum_wrm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		
 		if(myrank == 0){
-			gettimeofday(&tstop,NULL);
                 	printf("\nTerminated.\n");
-                	elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
-                	printf("Data processing in %f s.\n\n", elapsed);
+
+			elapsed = sum_tot/(double)nProc;
+			delta_mm = sum_mm/(double)nProc;
+			if(perf){
+				delta_wrm = sum_wrm/(double)nProc;
+                		printf("Data processing in %f s (time warmup: %f s).\n\n", elapsed-delta_wrm, delta_wrm);
+			}
+			else
+				printf("Data processing in %f s.\n\n", elapsed);
+
+			double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
+			double gigaf = (flops * 1.0e-9f) / delta_mm;
+			printf("Performance: %f GFlop/s, Time: %f ms, Flop: %.0f\n\n", gigaf, delta_mm, flops);
 		}
 
 	}
