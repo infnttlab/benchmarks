@@ -3,11 +3,13 @@
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
+#include "helper_string.h"
 
 int help_func(){
-        printf("\nUsage: ./a.out <ROW_A> <COL_A> <COL_B> <DEBUG>\n");
-        printf("Where: MATRIX(ROW, COL)  and  <COL_A> == <ROW_B>\n\n");
-        printf("Default: A = (512,512) B = (512,512); DEBUG = 0\n\n");
+        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  (matrix(row,col), ColumnsA = RowsB)\n");
+	printf("         -w=WarmUpData\n");
+	printf("         -v=Verbose\n\n");
+        printf("Default: A = (512,512) B = (512,512); WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }
@@ -33,13 +35,31 @@ void printMatrix(int row, int col, float *matrix){
 
 int main(int argc, char **argv){
         int val_returned = 0;
-        if(argc == 2 && ( (strcmp(argv[1], "--help")==0) || (strcmp(argv[1], "-h")==0) )){
+
+	if (checkCmdLineFlag(argc, (const char **)argv, "help") || checkCmdLineFlag(argc, (const char **)argv, "h")){
                 val_returned = help_func();
         }
         else{
                 int row_a = 512, col_a = 512;
                 int row_b = 512, col_b = 512;
-		int debug = 0;
+		int debug = 0, perf = 0;
+
+		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
+        		row_a = getCmdLineArgumentInt(argc, (const char **)argv, "rA");
+    		}
+		if (checkCmdLineFlag(argc, (const char **)argv, "cA")){
+                        col_a = getCmdLineArgumentInt(argc, (const char **)argv, "cA");
+                }
+		if (checkCmdLineFlag(argc, (const char **)argv, "cB")){
+                        col_b = getCmdLineArgumentInt(argc, (const char **)argv, "cB");
+                }
+		if (checkCmdLineFlag(argc, (const char **)argv, "w")){
+                        perf = getCmdLineArgumentInt(argc, (const char **)argv, "w");
+                }
+		if (checkCmdLineFlag(argc, (const char **)argv, "v")){
+                        debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
+                }
+/*
                 if(argc >= 2){
                         // change ROW_A
                         row_a = atoi(argv[1]);
@@ -54,6 +74,7 @@ int main(int argc, char **argv){
                                 }
                         }
                 }
+*/
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, row_b, col_b, row_a, col_b);
 
@@ -84,16 +105,18 @@ int main(int argc, char **argv){
                 //matrix multiplication
                 int i, j, k;
 
-		//performs warmup operations
-		printf("\nPerforming wermup...\n");
-		for(i=0; i<row_a; i++){
-                        for(j=0; j<col_b; j++){
-                                matrix_c[i*col_b+j] = 0.f;
-                                for(k=0; k<col_a; k++){
-                                        matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
-                                }
-                        }
-                }
+		if(perf){
+			//performs warmup operations
+			printf("\nPerforming wermup...\n");
+			for(i=0; i<row_a; i++){
+                        	for(j=0; j<col_b; j++){
+                                	matrix_c[i*col_b+j] = 0.f;
+                                	for(k=0; k<col_a; k++){
+                                        	matrix_c[i*col_b+j] += matrix_a[i*col_a+k]*matrix_b[k*col_b+j];
+                                	}
+                        	}
+                	}
+		}
 
 		gettimeofday(&start,NULL);
 		printf("\nComputing matrix multiplication...\n");
