@@ -34,7 +34,7 @@ _Default:_ DIM_BLOCK = 16
 
 _NB:_ The code to run needs CUDA libraries and gcc version >= 5.0
 ```sh
-gcc matrixMul_oacc.c -fopenacc -foffload="-O3" -O3 -o mtxMul.oacc.O3
+g++ matrixMul_oacc.c -fopenacc -foffload="-O3" -O3 -o mtxMul.oacc.O3
 
 Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB
          -w=WarmUpData
