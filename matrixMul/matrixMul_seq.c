@@ -40,8 +40,7 @@ int main(int argc, char **argv){
                 val_returned = help_func();
         }
         else{
-                int row_a = 512, col_a = 512;
-                int row_b = 512, col_b = 512;
+                int row_a = 512, col_a = 512, col_b = 512;
 		int debug = 0, perf = 0;
 
 		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
@@ -59,24 +58,9 @@ int main(int argc, char **argv){
 		if (checkCmdLineFlag(argc, (const char **)argv, "v")){
                         debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
                 }
-/*
-                if(argc >= 2){
-                        // change ROW_A
-                        row_a = atoi(argv[1]);
-
-                        if(argc >= 3){
-                                // change ROW_A COL_A and ROW_B, where COL_A = ROW_B
-                                col_a = row_b = atoi(argv[2]);
-                                if(argc >= 4){
-                                        col_b = atoi(argv[3]);
-					if(argc == 5)
-						debug = atoi(argv[4]);
-                                }
-                        }
-                }
-*/
-                printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
-			row_a, col_a, row_b, col_b, row_a, col_b);
+                
+		printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
+			row_a, col_a, col_a, col_b, row_a, col_b);
 
                 struct timeval start, stop;
                 double t_iniz = 0.0;
@@ -97,7 +81,7 @@ int main(int argc, char **argv){
                 //fill matrix A and B with random float, range 0-1
 
                 fill_matrix(row_a, col_a, matrix_a);
-                fill_matrix(row_b, col_b, matrix_b);
+                fill_matrix(col_a, col_b, matrix_b);
 		
 		gettimeofday(&stop,NULL);
 		t_iniz = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);
@@ -151,7 +135,7 @@ int main(int argc, char **argv){
 
 		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
 		double gigaFlop = (flops * 1.0e-9f) / t_mtxm;
-		printf("\nPerformance: %f GFlop/s, Time: %f ms, Flop: %.0f\n\n", gigaFlop, t_mtxm, flops);
+		printf("\nPerformance: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", gigaFlop, t_mtxm, flops);
         }
         return val_returned;
 }
