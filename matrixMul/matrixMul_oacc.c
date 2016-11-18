@@ -40,8 +40,7 @@ int main(int argc, char **argv){
                 val_returned = help_func();
         }
         else{
-                int row_a = 512, col_a = 512;
-                int row_b = 512, col_b = 512;
+                int row_a = 512, col_a = 512, col_b = 512;
 		int debug = 0, perf = 0;
 
 		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
@@ -61,7 +60,7 @@ int main(int argc, char **argv){
                 }
 
                 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
-			row_a, col_a, row_b, col_b, row_a, col_b);
+			row_a, col_a, col_a, col_b, row_a, col_b);
 
                 struct timeval tstart, tstop, mm_s, mm_e;
                 double elapsed = 0.0;
@@ -81,7 +80,7 @@ int main(int argc, char **argv){
                 //fill matrix A and B with random float, range 0-1
 
                 fill_matrix(row_a, col_a, matrix_a);
-                fill_matrix(row_b, col_b, matrix_b);
+                fill_matrix(col_a, col_b, matrix_b);
                 
 		//matrix multiplication
 		int i, j, k;
@@ -115,7 +114,7 @@ int main(int argc, char **argv){
 		gettimeofday(&mm_e,NULL);
 		t_m = (mm_e.tv_sec - mm_s.tv_sec) + ((mm_e.tv_usec - mm_s.tv_usec)/1000000.0);
 
-		if(debug){
+		if(debug == 2){
                         //print all matrix:
                         printf("\n## Matrix A:\n");
                         printMatrix(row_a, col_a, matrix_a);
@@ -128,16 +127,26 @@ int main(int argc, char **argv){
 		free(matrix_a); free(matrix_b); free(matrix_c);
 
                 gettimeofday(&tstop,NULL);
-                printf("\nTerminated.\n");
+
                 elapsed = (tstop.tv_sec - tstart.tv_sec) + ((tstop.tv_usec - tstart.tv_usec)/1000000.0);
+
+		double t_tot;
 		if(perf)
-                	printf("Data processing in %f s (warmup time: %f s).\n", elapsed-w_t, w_t);
+                	t_tot = elapsed-w_t, w_t;
 		else
-			printf("Data processing in %f s.\n", elapsed);
+			t_tot = elapsed;
 
 		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
 		double giga = (flops*1.0e-9f)/m_t;
-		printf("\nProcessing: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", giga, t_m, flops);
+		
+	//	printf("\nProcessing: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", giga, t_m, flops);
+
+		if(debug)
+                        printf("\nFlop: %.0f,  GFlop: %f GFlop/s,  Time_mtxMul: %f s,  Time_tot: %f s\n\n",
+                                flops, giga, t_m, t_tot);
+                else
+                        printf("\n%.0f %f %f %f\n\n",
+                                flops, giga, t_m, t_tot);
         }
         return val_returned;
 }

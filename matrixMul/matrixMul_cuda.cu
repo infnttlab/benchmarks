@@ -92,9 +92,6 @@ int main(int argc, char **argv){
 					start_mm, end_mm,
 					start_free, end_free;
 
-                        //cudaEventCreate(&startCUDA);
-                        //cudaEventCreate(&stopCUDA);
-			
 			cudaEventCreate(&start_all);
                         cudaEventCreate(&end_all);
 			cudaEventCreate(&start_fill);
@@ -103,9 +100,6 @@ int main(int argc, char **argv){
                         cudaEventCreate(&end_mm);
 			cudaEventCreate(&start_free);
                         cudaEventCreate(&end_free);
-
-                        //gettimeofday(&tstart,NULL);
-                        //cudaEventRecord(startCUDA, 0);
 
                         cudaEventRecord(start_all, 0);
 
@@ -188,19 +182,18 @@ int main(int argc, char **argv){
 			float timeMtxMul;
                         cudaEventElapsedTime(&timeMtxMul, start_mm, end_mm);
 
-/*
-			if(debug){
+			if(debug == 2){
                         	cudaMemcpy(matrix_a, d_matrix_a, (row_a*col_a)*sizeof(float), cudaMemcpyDeviceToHost);
                         	cudaMemcpy(matrix_b, d_matrix_b, (col_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
                         	cudaMemcpy(matrix_c, d_matrix_c, (row_a*col_b)*sizeof(float), cudaMemcpyDeviceToHost);
 			}
-*/
+
 
 			cudaEventRecord(start_free, 0);
 
                         cudaFree(d_matrix_c); cudaFree(d_matrix_a); cudaFree(d_matrix_b);
 
-/*			if(debug){
+			if(debug == 2){
 		                //print all matrix:
         		        printf("\n## Matrix A:\n");
                 		printMatrix(row_a, col_a, matrix_a);
@@ -209,7 +202,7 @@ int main(int argc, char **argv){
         	        	printf("\n## Matrix C:\n");
 	        	        printMatrix(row_a, col_b, matrix_c);
         	        }
-*/
+
 			free(matrix_a); free(matrix_b); free(matrix_c);			
 
 			cudaEventRecord(end_free, 0);
@@ -219,10 +212,26 @@ int main(int argc, char **argv){
 
                         printf("\nTerminated.\n");
 
-			printf("\nA. timeAllocation: %f ms;\nB. timeComputation: %f ms (fill: %f ms, matrixMul: %f ms);\nC. timeFree: %f ms;\nD. TOTAL: %f ms\n", timeAlloc, timeFill+timeMtxMul, timeFill, timeMtxMul, timeFree, timeAlloc+timeFill+timeMtxMul+timeFree);
 			double flops4mtxmul = 2.0*(double)row_a*(double)col_a*(double)col_b;
 			double gigaFlops = (flops4mtxmul * 1.0e-9f) / (timeMtxMul / 1000.0f);
-			printf("\nPerformance: %f GFlop/s; Time: %f ms; Flop: %f\n\n", gigaFlops, timeMtxMul, flops4mtxmul);
+
+		//	printf("\nPerformance: %f GFlop/s; Time: %f ms; Flop: %f\n\n", gigaFlops, timeMtxMul, flops4mtxmul);
+			if(debug){
+                        	printf("\nDimBlock: %d,  Flop: %.0f,  GFlop: %f GFlop/s,  Time_mtxMul: %f s\n",
+                                	dimBlock, flops4mtxmul, gigaFlops, timeMtxMul/1000.0f);
+				printf("Time_tot:");
+				printf("\nA. timeAllocation: %f s;\nB. timeComputation: %f s (fill: %f s, matrixMul: %f s);\nC. timeFree: %f s;\nD. TOTAL: %f s\n\n",
+					timeAlloc/1000.0f,
+					(timeFill+timeMtxMul)/1000.0f,
+					timeFill/1000.0f,
+					timeMtxMul/1000.0f,
+					timeFree/1000.0f,
+					(timeAlloc+timeFill+timeMtxMul+timeFree)/1000.0f
+				);
+			}
+                	else
+                        	 printf("\n%d %.0f %f %f %f\n\n",
+                                        dimBlock, flops4mtxmul, gigaFlops, timeMtxMul/1000.0f, (timeAlloc+timeFill+timeMtxMul+timeFree)/1000.0f);
                 }
         }
         return val_returned;

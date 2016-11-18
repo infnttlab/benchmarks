@@ -20,17 +20,17 @@ int help_func(){
 void fill_matrix(int row, int col, float *matrix){
 	int i, j;
 	for (i=0; i<row; i++){
-		for (j=0; j<col; j++)
+		for (j=0; j<col; j++){
 			matrix[i*col+j] = 0.1f;
+		}
 	}
 }
-
 
 void printMatrix(int row, int col, float *matrix){
 	int i, j = 0;
 	for (i=0; i<row; i++) {
 		for (j=0; j<col; j++)
-			printf("%f ", matrix[i*row+j]);
+			printf("%f ", matrix[i*col+j]);
 		printf("\n");
   	}
 }
@@ -53,8 +53,7 @@ int main(int argc, char *argv[]){
 		return 0;
         }
 	else{
-		int row_a = 512, col_a = 512;
-                int row_b = 512, col_b = 512;
+		int row_a = 512, col_a = 512, col_b = 512;
                 int debug = 0, perf = 0;
 
 		if (checkCmdLineFlag(argc, (const char **)argv, "rA")){
@@ -73,121 +72,147 @@ int main(int argc, char *argv[]){
                         debug = getCmdLineArgumentInt(argc, (const char **)argv, "v");
                 }
 
-		if (row_a%nProc != 0) {
-    			if (myrank == 0) printf("Width A not divisible by number of processors\n");
-    			MPI_Finalize();
-    			return 0;
-  		}
-		
 		if(myrank == 0)
-			 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
-				row_a, col_a, row_b, col_b, row_a, col_b);
+			 printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n\n",
+				row_a, col_a, col_a, col_b, row_a, col_b);
 
-		//struct timeval tstart, tstop;
-		double start_tot, time_tot, s_mm, time_wrm, time_mm,  delta_wrm, delta_mm, elapsed;
-		double sum_tot = 0.0, sum_wrm = 0.0, sum_mm = 0.0;
-		if(myrank == 0){
-			elapsed = delta_mm = delta_wrm = 0.0;
-		}
-
-		start_tot = MPI_Wtime();
-  		float *matrix_a;
-  		float *matrix_b;
-  		float *matrix_c;
-
-  		matrix_b = (float*)malloc(col_a*col_b*sizeof(float));
-
-  		if (myrank==0) {
-    			matrix_a = (float*)malloc(row_a*col_a*sizeof(float));
-    			fill_matrix(row_a, col_a, matrix_a);
-    			fill_matrix(col_a, col_b, matrix_b);
-  		}
-
-  		float *rowsAxProc;
-  		float *rowsCxProc;
-
-  		rowsAxProc = (float*)malloc(nProc*col_a*sizeof(float));
-  		rowsCxProc = (float*)malloc(nProc*col_b*sizeof(float));
-
-  		MPI_Bcast (matrix_b, col_a*col_b, MPI_FLOAT, 0, MPI_COMM_WORLD);
-  		MPI_Scatter (matrix_a, nProc*col_a, MPI_FLOAT, rowsAxProc, nProc*col_a, MPI_FLOAT, 0, MPI_COMM_WORLD);
-
-		if(perf){
-			s_mm = MPI_Wtime();
-			//Performs warmup operations:
-			for(i=0; i<nProc; i++){
-                        	for(j=0; j<col_b; j++){
-                                	rowsCxProc[i*col_b+j] = 0.f;
-                                	for(k=0; k<col_a; k++){
-                                        	rowsCxProc[i*col_b+j] += rowsAxProc[i*col_a+k]*matrix_b[k*col_b+j];
-                                	}
-                        	}
+		int pp;
+		for(pp=2; pp<=nProc; pp++){
+			if(myrank==0){
+				printf("############## pp: %d/%d   resto: %d\n", pp, nProc, row_a%pp);
+			}
+			
+			if (row_a%pp != 0){
+				if(myrank==0)
+					printf("ENTRO??????\n\n");
+                        	if (myrank == 0) printf("!! Proc: %d: %d %% %d != 0 !!\n",pp,row_a,pp);
                 	}
-			time_wrm = MPI_Wtime() - s_mm;
-		}
+			else{
+				double start_tot, time_tot, s_mm, time_wrm, time_mm, delta_wrm, delta_mm, elapsed;
+				double sum_tot = 0.0, sum_wrm = 0.0, sum_mm = 0.0;
+				if(myrank == 0){
+					elapsed = delta_mm = delta_wrm = 0.0;
+				}
 
-		s_mm = MPI_Wtime();
-		//computing matrix multipliaction:
-		for(i=0; i<nProc; i++){
-			for(j=0; j<col_b; j++){
-				rowsCxProc[i*col_b+j] = 0.f;
-				for(k=0; k<col_a; k++){
+				start_tot = MPI_Wtime();
+  				float *matrix_a;
+	  			float *matrix_b;
+  				float *matrix_c;
+	
+	  			matrix_b = (float*)malloc(col_a*col_b*sizeof(float));
+
+  				if (myrank==0) {
+    					matrix_a = (float*)malloc(row_a*col_a*sizeof(float));
+	    				fill_matrix(row_a, col_a, matrix_a);
+    					fill_matrix(col_a, col_b, matrix_b);
+		  		}	
+	
+		  		float *rowsAxProc;
+  				float *rowsCxProc;
+				int rows4proc = row_a/pp;
+
+				if(myrank==0) printf("rows4proc: %d\n", rows4proc);
+
+	  			rowsAxProc = (float*)malloc(rows4proc*col_a*sizeof(float));
+		  		rowsCxProc = (float*)malloc(rows4proc*col_b*sizeof(float));
+	
+  				MPI_Bcast (matrix_b, col_a*col_b, MPI_FLOAT, 0, MPI_COMM_WORLD);
+  				MPI_Scatter (matrix_a, rows4proc*col_a, MPI_FLOAT, rowsAxProc, rows4proc*col_a, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+				if(perf){
+					s_mm = MPI_Wtime();
+					//Performs warmup operations:
+					for(i=0; i<rows4proc; i++){
+                        			for(j=0; j<col_b; j++){
+                                			rowsCxProc[i*col_b+j] = 0.f;
+	                                		for(k=0; k<col_a; k++){
+        	                                		rowsCxProc[i*col_b+j] += rowsAxProc[i*col_a+k]*matrix_b[k*col_b+j];
+	                	                	}
+        	                		}
+	        	        	}
+					time_wrm = MPI_Wtime() - s_mm;
+				}
+
+				s_mm = MPI_Wtime();
+				//computing matrix multipliaction:
+				for(i=0; i<rows4proc; i++){
+					for(j=0; j<col_b; j++){
+						rowsCxProc[i*col_b+j] = 0.f;
+						for(k=0; k<col_a; k++){
+					/*		if(debug && myrank==0)
+								printf("** rank %d ** rowsCxProc[%d]: %f; rowsAxProc[%d]*B[%d]: %f*%f\n",
+									myrank,i*col_b+j, rowsCxProc[i*col_b+j], i*col_a+k, k*col_b+j,
+									rowsAxProc[i*col_a+k], matrix_b[k*col_b+j]
+								);*/
+	
+							rowsCxProc[i*col_b+j] += rowsAxProc[i*col_a+k]*matrix_b[k*col_b+j];
+						}
+					//	if(debug)
+					//		printf("** rank %d ** FINITO: rowsCxProc[%d]: %f\n",
+					//			myrank,i*col_b+j, rowsCxProc[i*col_b+j]);
+					}
+	  			}
+				time_mm = MPI_Wtime() - s_mm;
+	
+		 		free(rowsAxProc);
+
+  				if(myrank == 0){
+					matrix_c = (float*)malloc(row_a*col_b*sizeof(float));
+  				}
+
+		  		MPI_Gather (rowsCxProc, rows4proc*col_b, MPI_FLOAT, matrix_c, rows4proc*col_b, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+  				free(rowsCxProc); 
+
+  				if (myrank==0) {
+					if(debug == 2){
+    						printf("\n## Matrix A:\n");
+		    				printMatrix(row_a, col_a, matrix_a);
+						printf("\n## Matrix B:\n");
+    						printMatrix(col_a, col_b, matrix_b);
+						printf("\n## Matrix C:\n");
+    						printMatrix(row_a, col_b, matrix_c);
+					}
+    					free(matrix_a); free(matrix_c);
+  				}
+
+				//free(matrix_a); free(matrix_c);	
+		  		free(matrix_b);
+				time_tot = MPI_Wtime() - start_tot;
+	
+				MPI_Reduce(&time_tot, &sum_tot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD); 
+				MPI_Reduce(&time_mm, &sum_mm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if(perf)
+					MPI_Reduce(&time_wrm, &sum_wrm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+		
+				if(myrank == 0){
+					elapsed = sum_tot/(double)pp;
+					delta_mm = sum_mm/(double)pp;
+	
+					double tTot;
+
+					if(perf){
+						delta_wrm = sum_wrm/(double)pp;
+        	        			tTot = elapsed-delta_wrm;
+					}
+					else
+						tTot = elapsed;
+
+					double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
+					double gigaf = (flops * 1.0e-9f) / delta_mm;
+			
+
+		//			printf("Performance: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", gigaf, delta_mm, flops);
+
 					if(debug)
-						printf("** rank %d ** rowsCxProc[%d]: %f; rowsAxProc[%d]*B[%d]: %f*%f\n",
-							myrank, i*col_b+j, rowsCxProc[i*col_b+j], i*col_a+k, k*col_b+j,
-							rowsAxProc[i*col_a+k], matrix_b[k*col_b+j]);
-
-					rowsCxProc[i*col_b+j] += rowsAxProc[i*col_a+k]*matrix_b[k*col_b+j];
+                		        	printf("\nThreads: %d,  Flop: %.0f,  GFlop: %f GFlop/s,  Time_mtxMul: %f s,  Time_tot: %f s\n\n",
+                        		        	pp, flops, gigaf, delta_mm, tTot);
+	                		else
+        	                		printf("\n%d %.0f %f %f %f\n\n",
+                	                		pp, flops, gigaf, delta_mm, tTot);
 				}
 			}
-  		}
-		time_mm = MPI_Wtime() - s_mm;
-
- 		free(rowsAxProc);
-
-  		if(myrank == 0){
-			matrix_c = (float*)malloc(row_a*col_b*sizeof(float));
-  		}
-
-  		MPI_Gather (rowsCxProc, nProc*col_b, MPI_FLOAT, matrix_c, nProc*col_b, MPI_FLOAT, 0, MPI_COMM_WORLD);
-
-  		free(rowsCxProc); 
-
-  		if (myrank==0) {
-			if(debug){
-    				printf("\n## Matrix A:\n");
-    				printMatrix(row_a, col_a, matrix_a);
-				printf("\n## Matrix B:\n");
-    				printMatrix(col_a, col_b, matrix_b);
-				printf("\n## Matrix C:\n");
-    				printMatrix(row_a, col_b, matrix_c);
-			}
-    			free(matrix_a); free(matrix_c);
-  		}
-
-  		free(matrix_b);
-		time_tot = MPI_Wtime() - start_tot;
-
-		MPI_Reduce(&time_tot, &sum_tot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD); 
-		MPI_Reduce(&time_mm, &sum_mm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		if(perf)
-			MPI_Reduce(&time_wrm, &sum_wrm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-		
-		if(myrank == 0){
-                	printf("\nTerminated.\n");
-
-			elapsed = sum_tot/(double)nProc;
-			delta_mm = sum_mm/(double)nProc;
-			if(perf){
-				delta_wrm = sum_wrm/(double)nProc;
-                		printf("Data processing in %f s (time warmup: %f s).\n\n", elapsed-delta_wrm, delta_wrm);
-			}
-			else
-				printf("Data processing in %f s.\n\n", elapsed);
-
-			double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
-			double gigaf = (flops * 1.0e-9f) / delta_mm;
-			printf("Performance: %f GFlop/s, Time: %f ms, Flop: %.0f\n\n", gigaf, delta_mm, flops);
+			MPI_Barrier(MPI_COMM_WORLD);
 		}
 
 	}

@@ -62,6 +62,13 @@ int main(int argc, char **argv){
 		printf("\nMatrix A = (%d,%d); Matrix B = (%d,%d); AxB = (%d,%d)\n",
 			row_a, col_a, col_a, col_b, row_a, col_b);
 
+		printf("Computing matrix multiplication");
+		if(perf)
+			printf(" (perf=1)");
+		if(debug)
+			printf(" (debug=1)");
+		printf("...\n");
+
                 struct timeval start, stop;
                 double t_iniz = 0.0;
 		double t_fill = 0.0;
@@ -91,7 +98,6 @@ int main(int argc, char **argv){
 
 		if(perf){
 			//performs warmup operations
-			printf("\nPerforming wermup...\n");
 			for(i=0; i<row_a; i++){
                         	for(j=0; j<col_b; j++){
                                 	matrix_c[i*col_b+j] = 0.f;
@@ -103,7 +109,6 @@ int main(int argc, char **argv){
 		}
 
 		gettimeofday(&start,NULL);
-		printf("\nComputing matrix multiplication...\n");
                 for(i=0; i<row_a; i++){
                         for(j=0; j<col_b; j++){
 				matrix_c[i*col_b+j] = 0.f;
@@ -115,7 +120,7 @@ int main(int argc, char **argv){
 		gettimeofday(&stop,NULL);
 		t_mtxm = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);		
 
-		if(debug){
+		if(debug == 2){
                         //print all matrix:
                         printf("\n## Matrix A:\n");
                         printMatrix(row_a, col_a, matrix_a);
@@ -130,12 +135,21 @@ int main(int argc, char **argv){
                 gettimeofday(&stop,NULL);
 		t_free = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)/1000000.0);
 
-                printf("\nTerminated.\n");
-                printf("Data processing in %f s.\n", t_iniz+t_mtxm+t_free);
+		if(debug)
+                	printf("\nTerminated.\n");
+              //  printf("Data processing in %f s.\n", t_iniz+t_mtxm+t_free);
 
 		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
 		double gigaFlop = (flops * 1.0e-9f) / t_mtxm;
-		printf("\nPerformance: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", gigaFlop, t_mtxm, flops);
+		//printf("\nPerformance: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", gigaFlop, t_mtxm, flops);
+
+		if(debug)
+			printf("\nFlop: %.0f,  GFlop: %f GFlop/s,  Time_mtxMul: %f s,  Time_tot: %f s\n\n",
+				flops, gigaFlop, t_mtxm, t_iniz+t_mtxm+t_free);
+		else
+			printf("\n%.0f %f %f %f\n\n",
+                        	flops, gigaFlop, t_mtxm, t_iniz+t_mtxm+t_free);
+
         }
         return val_returned;
 }
