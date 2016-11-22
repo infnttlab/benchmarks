@@ -1,6 +1,6 @@
 #matrixMul
 
-Benchmarks: [Google Drive Benchmarks](https://docs.google.com/spreadsheets/d/1j6MXqHPtD__qOVB4mXoK4K4jAJX0GHGzMdnMNwUD_-M/edit#gid=0)
+Benchmarks: [Google Drive Benchmarks](https://docs.google.com/spreadsheets/d/1j6MXqHPtD__qOVB4mXoK4K4jAJX0GHGzMdnMNwUD_-M/edit#gid=0)  
 Nella cartella deve essere presente il file: `helper_string.h`.
 
 ### Sequenziale
