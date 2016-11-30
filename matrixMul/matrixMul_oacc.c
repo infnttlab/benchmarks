@@ -112,7 +112,7 @@ int main(int argc, char **argv){
                         }
                 }
 		gettimeofday(&mm_e,NULL);
-		t_m = (mm_e.tv_sec - mm_s.tv_sec) + ((mm_e.tv_usec - mm_s.tv_usec)/1000000.0);
+		t_mm = (mm_e.tv_sec - mm_s.tv_sec) + ((mm_e.tv_usec - mm_s.tv_usec)/1000000.0);
 
 		if(debug == 2){
                         //print all matrix:
@@ -132,21 +132,21 @@ int main(int argc, char **argv){
 
 		double t_tot;
 		if(perf)
-                	t_tot = elapsed-w_t, w_t;
+                	t_tot = elapsed-t_w;
 		else
 			t_tot = elapsed;
 
 		double flops = 2.0*(double)row_a*(double)col_a*(double)col_b;
-		double giga = (flops*1.0e-9f)/m_t;
+		double giga = (flops*1.0e-9f)/t_mm;
 		
 	//	printf("\nProcessing: %f GFlop/s, Time: %f s, Flop: %.0f\n\n", giga, t_m, flops);
 
 		if(debug)
                         printf("\nFlop: %.0f,  GFlop: %f GFlop/s,  Time_mtxMul: %f s,  Time_tot: %f s\n\n",
-                                flops, giga, t_m, t_tot);
+                                flops, giga, t_mm, t_tot);
                 else
                         printf("\n%.0f %f %f %f\n\n",
-                                flops, giga, t_m, t_tot);
+                                flops, giga, t_mm, t_tot);
         }
         return val_returned;
 }
