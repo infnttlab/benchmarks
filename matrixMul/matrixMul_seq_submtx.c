@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
     printf("\n++++ block_size: %d ++++\n", block_size);
 
-    int sizeMatrix = 5*2*block_size;
+    int sizeMatrix = 512;
 
     int perf = 0;
     int verb = 0;
