@@ -51,7 +51,6 @@ void matrixMul_seq(float *C, float *A, float *B, int sizeMatrix, int cur_row, in
          a <= aEnd;
          a += aStep, b += bStep)
     {
-
         // Declaration of the shared memory array As used to
         // store the sub-matrix of A
         /*__shared__ */float As[BLOCK_SIZE][BLOCK_SIZE];
@@ -173,13 +172,12 @@ int matrixMultiply(int argc, char **argv, int block_size, int &sizeMatrix, int &
     // Compute and print the performance
     double secPerMatrixMul = secTotal / nIter;
     double flopsPerMatrixMul = 2.0 * (double)sizeMatrix * (double)sizeMatrix * (double)sizeMatrix;
+    double flopsPerMatrixMul1 = (2.0*(double)block_size + 1.0)*(((double)sizeMatrix * (double)sizeMatrix * (double)sizeMatrix)/(double)block_size);
     printf("flopsPerMatrixMul = %f\n", flopsPerMatrixMul);
     double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (secPerMatrixMul );
-    printf(
-        "Performance= %.2f GFlop/s, Time= %.8f sec, Size= %.0f Ops\n",
-        gigaFlops,
-        secPerMatrixMul,
-        flopsPerMatrixMul);
+    double gigaFlops1 = (flopsPerMatrixMul1 * 1.0e-9f) / secPerMatrixMul;
+    printf("A. Performance= %.2f GFlop/s, Time= %.8f sec, Size= %.0f Ops\n",gigaFlops,secPerMatrixMul,flopsPerMatrixMul);
+    printf("B. Performance= %.2f GFlop/s, Time= %.8f sec, Size= %.0f Ops\n",gigaFlops1,secPerMatrixMul,flopsPerMatrixMul1);
 
     if(verb){
         //print matrix
@@ -210,8 +208,7 @@ int main(int argc, char **argv)
     if (checkCmdLineFlag(argc, (const char **)argv, "help") ||
         checkCmdLineFlag(argc, (const char **)argv, "?"))
     {
-        printf("Usage: -device=n (n >= 0 for deviceID)\n");
-        printf("       -size=SizeMatrix  -subSize=SizeSubMatrix\n");
+        printf("Usage: -size=SizeMatrix  -subSize=SizeSubMatrix\n");
         printf("       -perf=Performance -v=Verbose\n\n");
         printf("Note:  Size matrix must be a multiple of the size sub-matrix.\n\n");
 
