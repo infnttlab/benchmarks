@@ -143,7 +143,6 @@ int main(int argc, char **argv)
     {
         printf("\nUsage: -size=SizeMatrix(d:%d)\n",sizeMatrix);
         printf("       -perf=Performance(d:%d)   -v=Verbose(d:%d)\n\n",perf,verb);
-        printf("Note:  Size matrix must be a multiple of the size sub-matrix.\n\n");
 
         exit(EXIT_SUCCESS);
     }
