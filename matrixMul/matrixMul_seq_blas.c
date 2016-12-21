@@ -56,16 +56,15 @@ int matrixMultiply(int argc, char **argv, int &sizeMatrix, int &perf, int &verb)
     float *h_C = (float *) malloc(mem_size_C);
 
     int ii, jj;
-/*    if(perf){
+    char transA = 'N', transB = 'N';
+    float one = 1.f, zero = 0.f;
+
+    if(perf){
     	printf("\n----- Performing warmup operation... (perf = 1)\n");
-	for(ii=0; ii<sizeMatrix; ii+=block_size){
-                for(jj=0; jj<sizeMatrix; jj+=block_size){
-                        matrixMul_seq(h_C, h_A, h_B, sizeMatrix, ii, jj,block_size);
-                }
-        }
+	sgemm_(&transA,&transB,&sizeMatrix,&sizeMatrix,&sizeMatrix,&one,h_A,&sizeMatrix,h_B,&sizeMatrix,&zero,h_C,&sizeMatrix);
     	printf("done\n");
     }
-  */  
+    
     // Execute the kernel
     int nIter = 1;
 
@@ -75,15 +74,11 @@ int matrixMultiply(int argc, char **argv, int &sizeMatrix, int &perf, int &verb)
    // {
 //	int ii, jj;
 
-
-    char transA = 'N', transB = 'N';
-    float one = 1.f, zero = 0.f;
-
     gettimeofday(&start,NULL);
 
     //sgemm_(&transA, &transB, &rowsA, &colsB, &common, &one, A, &rowsA, B, &common, &zero, C, &rowsA);
 
-    sgemm_(&transA, &transB, &sizeMatrix, &sizeMatrix, &sizeMatrix, &one, h_A, &sizeMatrix, h_B, &sizeMatrix, &zero, h_C, &sizeMatrix);
+    sgemm_(&transA,&transB,&sizeMatrix,&sizeMatrix,&sizeMatrix,&one,h_A,&sizeMatrix,h_B,&sizeMatrix,&zero,h_C,&sizeMatrix);
 
 /*	for(ii=0; ii<sizeMatrix; ii+=block_size){
 		for(jj=0; jj<sizeMatrix; jj+=block_size){
