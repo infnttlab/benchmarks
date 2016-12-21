@@ -7,11 +7,11 @@
 #include "helper_string.h"
 
 int help_func(){
-        printf("\nUsage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB  | matrix(row,col), ColumnsA = RowsB\n");
-	printf("         -p=Threads\n");
-        printf("         -w=WarmUpData\n");
-        printf("         -v=Verbose\n\n");
-        printf("Default: A = (512,512) B = (512,512); THREADS = 2; WARMUP = 0; VERBOSE = 0\n\n");
+        printf("\nUsage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512)  | matrix(row,col), ColumnsA = RowsB\n");
+	printf("         -p=Threads(d:2)\n");
+        printf("         -w=WarmUpData(d:0)\n");
+        printf("         -v=Verbose(d:0)\n\n");
+       // printf("Default: A = (512,512) B = (512,512); THREADS = 2; WARMUP = 0; VERBOSE = 0\n\n");
 
         return 0;
 }

@@ -208,8 +208,8 @@ int main(int argc, char **argv)
     if (checkCmdLineFlag(argc, (const char **)argv, "help") ||
         checkCmdLineFlag(argc, (const char **)argv, "?"))
     {
-        printf("Usage: -size=SizeMatrix  -subSize=SizeSubMatrix\n");
-        printf("       -perf=Performance -v=Verbose\n\n");
+        printf("Usage: -size=SizeMatrix(d:512)  -subSize=SizeSubMatrix(d:64)\n");
+        printf("       -perf=Performance(d:0)   -v=Verbose(d:0)\n\n");
         printf("Note:  Size matrix must be a multiple of the size sub-matrix.\n\n");
 
         exit(EXIT_SUCCESS);
@@ -217,7 +217,7 @@ int main(int argc, char **argv)
 
     // Use a larger block size for Fermi and above
    // int block_size = (deviceProp.major < 2) ? 16 : 32;
-    int block_size = 2;
+    int block_size = 64;
 
     // width of Matrix A
     if (checkCmdLineFlag(argc, (const char **)argv, "subSize"))
