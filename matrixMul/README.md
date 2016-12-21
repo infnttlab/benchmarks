@@ -40,6 +40,8 @@ wget http://www.netlib.org/blas/blas.tgz
 tar zxvf blas.tgz
 cd BLAS-3.5.0
 make
+# error: gfortran: Command not found
+# apt-get install gfortran
 mv blas_LINUX.a libblas.a #oppure: ar rv libblas.a *.o
 ```
 Nel codice bisogna aggiungerci:  
@@ -51,6 +53,9 @@ Nel codice bisogna aggiungerci:
 Compilare:
 ```sh
 g++ matrixMul_seq_blas.c -L/root/BLAS-3.5.0/libblas.a -lblas -O3 -o mtxMul.seq.blas.O3
+
+# error: /usr/bin/ld: cannot find -lblas
+# apt-get install libblas-dev
 
 Usage: -size=SizeMatrix(d:512)
        -perf=Performance(d:0)   -v=Verbose(d:0)
