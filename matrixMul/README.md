@@ -8,11 +8,10 @@ Nella cartella deve essere presente il file: `helper_string.h`.
 ```sh
 g++ -O3 matrixMul_seq.c -o mtxMul.seq.O3
 
-Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB
-         -w=WarmUpData
-         -v=Verbose
+Usage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512) | matrix(row,col), ColumnsA = RowsB
+         -w=WarmUpData(d:0)
+         -v=Verbose(d:0)
 ```
-_Default_: A = (512,512) B = (512,512); WARMUP = 0; VERBOSE = 0  
 
 _Troubleshooting:_  
 **1.** `Segmentation fault` con dimensioni >= 1000  
@@ -23,12 +22,11 @@ Per compilare:
 ```sh
 ./compile_seq_sub.sh
 
-Usage: -size=SizeMatrix  -subSize=SizeSubMatrix
-       -perf=Performance -v=Verbose
+Usage: -size=SizeMatrix(d:512)  -subSize=SizeSubMatrix(d:64)
+       -perf=Performance(d:0) -v=Verbose(d:0)
 
 Note:  Size matrix must be a multiple of the size sub-matrix.
 ```
-_Default_: SizeMatrix = 512; SizeSubMatrix = 2  
 
 #### C. BLAS lib
 Installazione:  
@@ -66,12 +64,11 @@ _NB:_ Se non trova il compilatore `nvcc` aggiungerci il rispettivo path (es. `/u
 ```sh
 nvcc -O3 matrixMul_cuda.cu -lm -o mtxMul.cuda.O3
 
-Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB
-         -db=DimBlock                             | DimBlock(in threads): [1-32], block(DimBlock, DimBlock)
-         -w=WarmUpData
-         -v=Verbose
+Usage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512) | matrix(row,col), ColumnsA = RowsB
+         -db=DimBlock(d:16)                             | DimBlock(in threads): [1-32], block(DimBlock, DimBlock)
+         -w=WarmUpData(d:0)
+         -v=Verbose(d:0)
 ```  
-_Default:_ DIM_BLOCK = 16
 
 ---
 ### OpenACC
@@ -81,9 +78,9 @@ _NB:_ The code to run needs CUDA libraries and gcc version >= 5.0
 ```sh
 g++ matrixMul_oacc.c -fopenacc -foffload="-O3" -O3 -o mtxMul.oacc.O3
 
-Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB
-         -w=WarmUpData
-         -v=Verbose
+Usage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512) | matrix(row,col), ColumnsA = RowsB
+         -w=WarmUpData(d:0)
+         -v=Verbose(d:0)
 ```
 
 ---
@@ -91,21 +88,20 @@ Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = 
 ```sh
 g++ -O3 -fopenmp matrixMul_omp.c -o mtxMul.omp.O3
 
-Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB
-         -p=Threads
-         -w=WarmUpData
-         -v=Verbose
+Usage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512) | matrix(row,col), ColumnsA = RowsB
+         -p=Threads(d:2)
+         -w=WarmUpData(d:0)
+         -v=Verbose(d:0)
 ```
-_Default:_ THREADS = 2 
 
 ---
 ### MPI
 ```sh
 mpic++ -O3 matrixMul_mpi.c -o mtxMul.mpi.O3
 
-Usage:   -rA=RowsA     -cA=ColumnsA  -cB=ColumnsB | matrix(row,col), ColumnsA = RowsB divisibile per num.processi
-         -w=WarmUpData
-         -v=Verbose
+Usage:   -rA=RowsA(d:512)     -cA=ColumnsA(d:512)  -cB=ColumnsB(d:512) | matrix(row,col), ColumnsA = RowsB divisibile per num.processi
+         -w=WarmUpData(d:0)
+         -v=Verbose(d:0)
 ```
 
 
