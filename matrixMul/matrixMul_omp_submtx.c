@@ -270,6 +270,8 @@ int main(int argc, char **argv)
     printf("# Block_size: %d\n",block_size);
     if(perf)
         printf("# PERF ENABLED\n");
+    else
+	printf("# PERF DISABLED\n");
     printf("# ###################################### #\n\n");
 
 
