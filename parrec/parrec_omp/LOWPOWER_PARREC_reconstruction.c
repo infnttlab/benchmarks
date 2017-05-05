@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
 	DataSet.Seq_end = 400;
 	DataSet.Number_of_Images=1;
 	DataSet.File_Type = SDT;
-	DataSet.Width = 256;
-	DataSet.Height = 360;
+	DataSet.Width = 2048;
+	DataSet.Height = 720;
 	DataSet.Data_Type = FLT;
 	printf("\nSequence name is <<%s>> and there are <<%d>> images",DataSet.Name,DataSet.Number_of_Images);
 	printf("\nImages have %d width and %d height",DataSet.Width,DataSet.Height);
