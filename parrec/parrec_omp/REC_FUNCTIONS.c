@@ -314,7 +314,7 @@ int BackProjectFilteredDataOnSlice(int FFT_lenght,int FFT_start,float xs,float y
 	sod_quadro = (double)sod*(double)sod; 
 
 
-	for (num_thread=1;num_thread<=8;num_thread++){
+	for (num_thread=1;num_thread<=16;num_thread++){
 
 	omp_set_num_threads(num_thread);
         start_time = omp_get_wtime();
@@ -550,7 +550,7 @@ int BackProjectFilteredDataOnSlice(int FFT_lenght,int FFT_start,float xs,float y
 	} // fine di teta in funzione di h
 	
 	run_time = omp_get_wtime() - start_time;
-	printf("%d : %f s\n",num_thread,run_time);
+	printf("%f s : %d\n",run_time, num_thread);
 	} // fine di loop per uno specifico num_thread
 
 	return 0;
