@@ -314,12 +314,12 @@ int BackProjectFilteredDataOnSlice(int FFT_lenght,int FFT_start,float xs,float y
 	sod_quadro = (double)sod*(double)sod; 
 
 
-	for (num_thread=4;num_thread<=4;num_thread++){
+	for (num_thread=1;num_thread<=8;num_thread++){
 
 	omp_set_num_threads(num_thread);
         start_time = omp_get_wtime();
 
-	printf("%d threads\n",num_thread);
+//	printf("%d threads\n",num_thread);
 
         // zero padding di slice: anche qui si usa width perchè nrays potrebbe essere la metà di width
         k=0;
@@ -550,7 +550,7 @@ int BackProjectFilteredDataOnSlice(int FFT_lenght,int FFT_start,float xs,float y
 	} // fine di teta in funzione di h
 	
 	run_time = omp_get_wtime() - start_time;
-	printf("%d threads, %f seconds\n",num_thread,run_time);
+	printf("%d : %f s\n",num_thread,run_time);
 	} // fine di loop per uno specifico num_thread
 
 	return 0;
