@@ -550,7 +550,8 @@ int BackProjectFilteredDataOnSlice(int FFT_lenght,int FFT_start,float xs,float y
 	} // fine di teta in funzione di h
 	
 	run_time = omp_get_wtime() - start_time;
-	printf("%f s : %d\n",run_time, num_thread);
+	printf("%f\n",run_time);
+//	printf("%f s : %d\n",run_time, num_thread);
 	} // fine di loop per uno specifico num_thread
 
 	return 0;
