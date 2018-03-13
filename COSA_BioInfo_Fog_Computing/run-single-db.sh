@@ -28,7 +28,7 @@ while [ "${nth}" -le "${maxcore}" ]; do
                 cp -rL ${dest} ../
         done
 
-        ./running_in_the_fog_MCORE_flag.sh  ${nth}  ${dir}  ${file_in}
+        ./run_deepnano_kraken.sh  ${nth}  ${dir}  ${file_in}
 
         nth=$((nth * 2))
 done
