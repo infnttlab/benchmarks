@@ -5,7 +5,7 @@ export LC_CTYPE="en_US.UTF-8"
 
 mkdir fog_computing
 cd fog_computing/
-    git clone https://elenacorni@bitbucket.org/vboza/deepnano.git
+    git clone https://bitbucket.org/vboza/deepnano.git
     
     sudo apt-get install python-pip
     sudo -H python -m pip install Theano
