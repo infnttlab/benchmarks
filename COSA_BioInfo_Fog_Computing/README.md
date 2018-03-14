@@ -6,9 +6,9 @@ Run the script `install_deepnano_kraken.sh`
 ./install_deepnano_kraken.sh
 ```
 
-At the end of its execution will be created a `fog_computing/` directory and into this:
-- `deepnano/` forlder that contains all script to run Deepnano software and the scripts that you can use to do tests.
-- `jellyfish-1.1.11/` folder, it's a necessary library
+At the end of its execution, a folder named `fog_computing/` will be created, which contains:
+- `deepnano/` with all the scripts needed to run Deepnano software do tests.
+- `jellyfish-1.1.11/` with a needed library
 - `kraken-0.10.5-beta/`
 - `minikraken_20141208/`
 
