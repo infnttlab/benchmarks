@@ -28,20 +28,30 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 
 ```sh
 ./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
-i.e. ./run_deepnano_kraken.sh  8  Ecoli_2D   4
+Example: ./run_deepnano_kraken.sh  8  Ecoli_2D   4
 
 ./run_single_db.sh  [n-max-core]  [n-file-tot]  [dir]
-i.e. ./run_single_db.sh 8 32 Ecoli_2D
+Example: ./run_single_db.sh 8 32 Ecoli_2D
 
 ./run-all-test.sh
 
 # To 
 python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
-i.e. python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
+Example: python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
 
-# To create a structure of folders in which to split a given dataset:
+# To create a mini-database and to further split it in folders.
+# n-file files are equally distributed among different sub-folders,
+# which are then grouped in different folders according to the number of cores
+# used in the tests, i.e. th1, th2, th4, th8 for 1, 2, 4, 8 cores respectively.
+# The structure in /dataset4test is the following:
+#
+# folderName   nSubFolder   nFileXFolder
+# th1            1           32        
+# th2            2           16
+# th4            4           8
+# th8            8           4
 ./split_db.sh  [dest-path]   [n-max-core]  [n-file]  [db-name]
-i.e. ./split_db.sh /mnt/avoton/fog/data/tt/ 8 32 Equal_v5_2D
+Example: ./split_db.sh /mnt/avoton/fog/data/tt/ 8 32 Equal_v5_2D
 
 # To plot the speedup of the applications, using the files outputted by run_deepnano_kraken.sh, named[processor-name]_perf.csv:
 python plot_speedup.py [n-dataset] [data-csv1] [data-csv2] ... [data-csvN]
@@ -79,71 +89,14 @@ which we downloaded from ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnan
 
 ```sh
     
-#DB used:
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Ecoli_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Equal_v5_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Equal_v6_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Maeru_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Pfluor_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Rare_v6_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Selong_2D.tar.gz
-#ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/Staggered_2D.tar.gz
-
-cd data/
-ls -1
-    
-dataset4test
-Ecoli_2D
-Equal_v5_2D
-Equal_v6_2D
-Maeru_2D
-Pfluor_2D
-Rare_v6_2D
-readme.txt
-Selong_2D
-split_db.sh
-split_db.sh
-Staggered_2D
-    
-# Lo script di seguito crea un db di 32 file provenienti dal db Equal_v5_2D (in questo caso)
-# questo db verrà poi diviso in sotto cartelle contenenti un numero uguale di file 
-# in modo tale che si possa processare il db usando un numero di core crescente.
-# Queste sotto cartelle sono raggruppate in cartelle (contenute in dataset4test/) 
-# in base al numero di core usati, quindi:
-#
-# nomeDir   nSubDir   nFileXdir
-# th1        1           32        
-# th2        2           16
-# th4        4           8
-# th8        8           4
-
+### Example of usage:
+# Use split_db.sh to create a mini-database of 32 files for Equal_v5_2D.
 ./split_db.sh 8 32 Equal_v5_2D/
     
-# Ora si va sulla macchina sulla quale far girare il test (es. xeond4)
+# Change working directory to where the applications are installed, e.g.
 cd fog_computing/deepnano
-    
-root@xeond4:~/fog_computing/deepnano# ls -1
-
-align_2d
-align_2d.cc
-basecall_no_metrichor_devel.py
-basecall_no_metrichor.py
-basecall.py
-helpers.py
-helpers.pyc
-LICENSE
-nets_data
-r9
-README.md
-rnn_fin.py
-rnn_fin.pyc
-run_all_test.sh
-run_deepnano_kraken.sh
-run_single_db.sh
-scheduler.py
-training
-    
-# Si fa girare "run-all-test.sh" che a sua volta chiama "run-single-db.sh" che chiama "running_in_the_fog_MCORE_flag.sh"
+      
+# For executing both "run-single-db.sh" and "running_in_the_fog_MCORE_flag.sh":
 ./run-all-test.sh
     
 # run-single-db.sh: ./run-single-db.sh  [n-max-core]  [n-file-tot]  [dir]
