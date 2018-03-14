@@ -14,9 +14,12 @@ fi
 
 host=$(hostname -s)
 
+modelName=$(lscpu | grep -oP 'Model name:\s*\K.+' | sed "s/[(][^)]*[)]//g")
+modelName=${modelName// /_}
+
 echo " "
 echo "This script takes the time-performances of deepnano and kraken using ${2} dataset and minikraken database."
-echo "Times will be saved into \"${host}_perf.csv\" file, output files into \"outputs\" dir."
+echo "Times will be saved into \"${modelName}_perf.csv\" file, output files into \"outputs\" dir."
 echo " "
 
 export LC_ALL=en_US.UTF-8
@@ -124,10 +127,10 @@ do
         rm -r outputs
 done
 
-if [ ! -f ${host}_perf.csv ]; then
-    echo -e "#host,\\tdbName,\\tmaxTh,\\tnFile,\\tn-bp,\\tt_deepnV_bps,\\tt_kraken_bps" >> ${host}_perf.csv
+if [ ! -f ${modelName}_perf.csv ]; then
+    echo -e "#host,\\tdbName,\\tmaxTh,\\tnFile,\\tn-bp,\\tt_deepnV_bps,\\tt_kraken_bps" >> ${modelName}_perf.csv
 fi
 
-echo -e "${host}\\t${dbName}\\t${maxTh}\\t${nFile}\\t${t_bp}\\t${t_deepnV_bps}\\t${t_kraken_bps}" >> ${host}_perf.csv
+echo -e "${host}\\t${dbName}\\t${maxTh}\\t${nFile}\\t${t_bp}\\t${t_deepnV_bps}\\t${t_kraken_bps}" >> ${modelName}_perf.csv
 echo "/-----------------------------------------------------/"
 echo "Done."
