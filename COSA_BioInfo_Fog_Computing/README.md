@@ -24,7 +24,7 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 ./kraken --db ../minikraken_20141208/ [deepnano-output].fasta
 ```
 
-## The our tests:
+## Our tests:
 ### Dataset Used:
 
 Abbiamo selezionato 32 file da ciascun dataset per formare un mini-dataset e processare quello scalando sui core.
