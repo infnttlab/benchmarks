@@ -37,6 +37,14 @@ i.e. ./run_single_db.sh 8 32 Ecoli_2D
 
 python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
 i.e. python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
+
+# To create a directories structure to split your dataset in a lot of subdir, you can run:
+./split_db.sh  [dest-path]   [n-max-core]  [n-file]  [db-name]
+i.e. ./split_db.sh /mnt/avoton/fog/data/tt/ 8 32 Equal_v5_2D
+
+# To plot speedup of deepnano and kraken using the output files from ./run_deepnano_kraken.sh called [processor-name]_perf.csv,
+# you can run:
+python plot_speedup.py [n-dataset] [data-csv1] [data-csv2] ... [data-csvN]
 ```
 
 ## Our tests:
