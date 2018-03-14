@@ -14,6 +14,7 @@ cd fog_computing/
     
     cd deepnano/
         g++ -O2 -std=gnu++0x align_2d.cc -o align_2d
+        mv ../run_* ../scheduler.py ../basecall_no_metrichor.py .
     cd ..
     
     wget http://www.cbcb.umd.edu/software/jellyfish/jellyfish-1.1.11.tar.gz
