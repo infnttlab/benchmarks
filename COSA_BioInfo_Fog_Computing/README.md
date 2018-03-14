@@ -12,16 +12,30 @@ At the end of its execution will be created a `fog_computing/` directory and int
 - `kraken-0.10.5-beta/`
 - `minikraken_20141208/`
 
-## Run Deepnano:
+## How to run...
+### Deepnano:
 
 ```sh
 OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file]  --output [output-name].fasta
 ```
 
-## Run Kraken:
+### Kraken:
 
 ```sh
 ./kraken --db ../minikraken_20141208/ [deepnano-output].fasta
+```
+### Our scripts:
+
+```sh
+./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
+i.e. ./run_deepnano_kraken.sh  8  Ecoli_2D   4
+
+./run_single_db.sh  [n-max-core]  [n-file-tot]  [dir]
+i.e. ./run_single_db.sh 8 32 Ecoli_2D
+
+./run-all-test.sh
+
+
 ```
 
 ## Our tests:
