@@ -50,7 +50,7 @@ python plot_speedup.py [n-dataset] [data-csv1] [data-csv2] ... [data-csvN]
 ## Our tests:
 ### Dataset:
 
-The mini-dataset we processed with our SoCs is composed of 32 files selected from each of teh following datasets:
+The mini-dataset we processed with our SoCs is composed of 32 files selected from each of the following datasets:
 
 | DB           |   DB size  | n file tot |  Size tot.  |
 | ------------ | :--------: | :--------: | :---------: |
@@ -62,6 +62,9 @@ The mini-dataset we processed with our SoCs is composed of 32 files selected fro
 | Rare_v6_2D   |    1.6G    |     32     |     53M     |
 | Selong_2D    |    367M    |     32     |     62M     |
 | Staggered_2D |    4.8G    |     32     |     44M     |
+
+which we downloaded from ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfordnanopore_native/
+
 
 ### SoCs:
 
