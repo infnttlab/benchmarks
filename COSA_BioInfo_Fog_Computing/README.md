@@ -35,7 +35,8 @@ i.e. ./run_single_db.sh 8 32 Ecoli_2D
 
 ./run-all-test.sh
 
-
+python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
+i.e. python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
 ```
 
 ## Our tests:
