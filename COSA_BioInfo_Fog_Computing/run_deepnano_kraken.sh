@@ -97,7 +97,7 @@ t_kraken_bps=0.00
 for th in $(seq ${maxTh})
 do
         # tempo deeepnano solo sequenziamento senza tempo iniz rete neurale:
-        cat deepnano_${th}_${nFile}.txt | grep vero > deepnano_${th}_${nFile}_tempo.txt
+        cat deepnano_${th}_${nFile}.txt | grep execution > deepnano_${th}_${nFile}_tempo.txt
         time_deepV=$( cat deepnano_${th}_${nFile}_tempo.txt | awk '{print $1;}' )
 
         # n basi:
