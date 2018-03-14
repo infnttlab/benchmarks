@@ -1,4 +1,4 @@
-## Install Deepnano and Minikraken DB:
+## How to install Deepnano and Minikraken DB
 
 Run the script `install_deepnano_kraken.sh`
 
@@ -12,7 +12,7 @@ At the end of its execution, a folder named `fog_computing/` will be created, wh
 - `kraken-0.10.5-beta/`
 - `minikraken_20141208/`
 
-## How to run...
+## How to run
 ### Deepnano:
 
 ```sh
@@ -24,7 +24,7 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 ```sh
 ./kraken --db ../minikraken_20141208/ [deepnano-output].fasta
 ```
-### Our scripts:
+### Dedicated scripts:
 
 ```sh
 ./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
@@ -35,22 +35,22 @@ i.e. ./run_single_db.sh 8 32 Ecoli_2D
 
 ./run-all-test.sh
 
+# To 
 python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
 i.e. python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
 
-# To create a directories structure to split your dataset in a lot of subdir, you can run:
+# To create a structure of folders in which to split a given dataset:
 ./split_db.sh  [dest-path]   [n-max-core]  [n-file]  [db-name]
 i.e. ./split_db.sh /mnt/avoton/fog/data/tt/ 8 32 Equal_v5_2D
 
-# To plot speedup of deepnano and kraken using the output files from ./run_deepnano_kraken.sh called [processor-name]_perf.csv,
-# you can run:
+# To plot the speedup of the applications, using the files outputted by run_deepnano_kraken.sh, named[processor-name]_perf.csv:
 python plot_speedup.py [n-dataset] [data-csv1] [data-csv2] ... [data-csvN]
 ```
 
 ## Our tests:
-### Dataset Used:
+### Dataset:
 
-Abbiamo selezionato 32 file da ciascun dataset per formare un mini-dataset e processare quello scalando sui core.
+The mini-dataset we processed with our SoCs is composed of 32 files selected from each of teh following datasets:
 
 | DB           |   DB size  | n file tot |  Size tot.  |
 | ------------ | :--------: | :--------: | :---------: |
@@ -63,7 +63,7 @@ Abbiamo selezionato 32 file da ciascun dataset per formare un mini-dataset e pro
 | Selong_2D    |    367M    |     32     |     62M     |
 | Staggered_2D |    4.8G    |     32     |     44M     |
 
-### Schede usate:
+### SoCs:
 
 | Host     |   N.core  | 
 | -------- | :-------: | 
