@@ -6,13 +6,26 @@ Run the script `install_deepnano_kraken.sh`
 ./install_deepnano_kraken.sh
 ```
 
-At the end of its executiond will be created a `fog_computing/` directory and into this:
+At the end of its execution will be created a `fog_computing/` directory and into this:
 - `deepnano/` forlder that contains all script to run Deepnano software and the scripts that you can use to do tests.
 - `jellyfish-1.1.11/` folder, it's a necessary library
 - `kraken-0.10.5-beta/`
 - `minikraken_20141208/`
 
-## Dataset Used:
+## Run Deepnano:
+
+```sh
+OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file]  --output [output-name].fasta
+```
+
+## Run Kraken:
+
+```sh
+./kraken --db ../minikraken_20141208/ [deepnano-output].fasta
+```
+
+## The our tests:
+### Dataset Used:
 
 Abbiamo selezionato 32 file da ciascun dataset per formare un mini-dataset e processare quello scalando sui core.
 
@@ -27,7 +40,7 @@ Abbiamo selezionato 32 file da ciascun dataset per formare un mini-dataset e pro
 | Selong_2D    |    367M    |     32     |     62M     |
 | Staggered_2D |    4.8G    |     32     |     44M     |
 
-## Schede usate:
+### Schede usate:
 
 | Host     |   N.core  | 
 | -------- | :-------: | 
