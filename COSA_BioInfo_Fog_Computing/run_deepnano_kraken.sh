@@ -14,7 +14,7 @@ fi
 
 host=$(hostname -s)
 
-modelName=$(lscpu | grep -oP 'Model name:\s*\K.+' | sed "s/[(][^)]*[)]//g")
+modelName=$(cat /proc/cpuinfo | grep  'model name' | uniq | cut -d ":" -f2 | sed  's/^ *//' | sed "s/[(][^)]*[)]//g")
 modelName=${modelName// /_}
 
 echo " "
