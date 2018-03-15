@@ -89,16 +89,10 @@ which can be downloaded from ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfor
     
 # Change working directory to where the applications are installed, e.g.
 cd fog_computing/deepnano
-      
-# For executing both "run-single-db.sh" and "running_in_the_fog_MCORE_flag.sh":
-./run-all-test.sh
-    
-# run-single-db.sh: ./run-single-db.sh  [n-max-core]  [n-file-tot]  [dir]
-# es: ./run-single-db.sh 8 32 Ecoli_2D
-#
-# running_in_the_fog_MCORE_flag.sh: ./running_in_the_fog_MCORE_flag.sh  [n-proc]  [db-name] [n-file]
-# es: ./running_in_the_fog_MCORE_flag.sh  8  Ecoli_2D   4
-    
-# verrà creato il file "performance_bps_MCORE.txt" con le performance, i cui dati saranno ordinati secondo lo schema:
-# host    dbName  maxTh   nFile   n-bp    t_deepnV [bp/s] t_kraken [bp/s]
+
+# For executing 4 instances of Deepnano -> Kraken and then upload to AWS:
+./run_deepnano_kraken.sh  4  Equal_v5_2D   4
+
+# For executing 4 instances of Deepnano -> Kraken and then upload to AWS:
+./python scheduler.py -p /mnt/avoton/fog/data/splitDB/split16 -d Equal_v5_2D -n 4
 ```
