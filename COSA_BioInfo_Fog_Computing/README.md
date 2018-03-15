@@ -49,8 +49,6 @@ Example: python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Eco
 ./split_db.sh  [dest-path]   [n-max-core]  [n-file]  [db-name]
 Example: ./split_db.sh /mnt/avoton/fog/data/tt/ 8 32 Equal_v5_2D
 
-# To plot the speedup of the applications, using the files outputted by run_deepnano_kraken.sh, named[processor-name]_perf.csv:
-python plot_speedup.py [n-dataset] [data-csv1] [data-csv2] ... [data-csvN]
 ```
 
 ## Our tests:
