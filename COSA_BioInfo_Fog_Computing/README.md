@@ -36,7 +36,7 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 ./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
 Example: ./run_deepnano_kraken.sh  8  Ecoli_2D   4
 
-# Scheduler for executing multiple instances of Deepnano and Kraken in parallel, feeding a queue 
+# Scheduler for executing multiple instances of Deepnano and Kraken in parallel, feeding a queue and preparing .js file for AWS
 python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
 Example: python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
 
