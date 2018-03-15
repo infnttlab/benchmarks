@@ -29,6 +29,10 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 
 ```sh
 # To execute Deepnano and then Kraken on n_proc cores simultaneously (n_proc must be equal to the number of folders in DB)
+# Folder names in DB must be: <db-name>_<index>_<n-file-in-this-dir>
+# Example: if you want to use four processes to process your dataset with 32 files in total,
+# you have to split it in four folders in which there are 8 files each. So you'll have:
+# Ecoli_2D_1_8/; Ecoli_2D_2_8/; Ecoli_2D_3_8/; Ecoli_2D_4_8/ 
 ./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
 Example: ./run_deepnano_kraken.sh  8  Ecoli_2D   4
 
