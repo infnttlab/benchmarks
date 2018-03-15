@@ -18,7 +18,7 @@ A folder named `fog_computing/` will be created, which contains:
 ```sh
 OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file]  --output [output-name].fasta
 ```
-`basecall_no_metrichor.py/`, originally from Deepnano, has been modified in order to output execution time.
+`basecall_no_metrichor.py`, originally from Deepnano, has been modified in order to output execution time.
 
 ### Kraken:
 
