@@ -90,9 +90,9 @@ which can be downloaded from ftp://ftp.sra.ebi.ac.uk/vol1/ERA742/ERA742349/oxfor
 # Change working directory to where the applications are installed, e.g.
 cd fog_computing/deepnano
 
-# For executing 4 instances of Deepnano -> Kraken and then upload to AWS:
+# Execute 4 instances of Deepnano -> Kraken and then upload to AWS:
 ./run_deepnano_kraken.sh  4  Equal_v5_2D   4
 
-# For executing 4 instances of Deepnano -> Kraken and then upload to AWS:
+# Execute 4 instances of Deepnano -> Kraken and then upload to AWS:
 ./python scheduler.py -p /mnt/avoton/fog/data/splitDB/split16 -d Equal_v5_2D -n 4
 ```
