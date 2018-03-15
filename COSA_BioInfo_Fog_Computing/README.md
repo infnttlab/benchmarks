@@ -6,7 +6,7 @@ Run the script `install_deepnano_kraken.sh`
 ./install_deepnano_kraken.sh
 ```
 
-At the end of its execution, a folder named `fog_computing/` will be created, which contains:
+A folder named `fog_computing/` will be created, which contains:
 - `deepnano/` with all the scripts needed to run Deepnano software do tests.
 - `jellyfish-1.1.11/` with a needed library
 - `kraken-0.10.5-beta/`
@@ -27,15 +27,11 @@ OMP_NUM_THREADS=1 python  basecall_no_metrichor.py  --directory  [dir-fast5-file
 ### Dedicated scripts:
 
 ```sh
+# To execute Deepnano and then Kraken on n_proc cores simultaneously (n_proc must be equal to the number of folders in DB)
 ./run_deepnano_kraken.sh  [n-proc]  [db-name] [n-file]
 Example: ./run_deepnano_kraken.sh  8  Ecoli_2D   4
 
-./run_single_db.sh  [n-max-core]  [n-file-tot]  [dir]
-Example: ./run_single_db.sh 8 32 Ecoli_2D
-
-./run-all-test.sh
-
-# To 
+# Scheduler for executing multiple instances of Deepnano and Kraken in parallel, feeding a queue 
 python scheduler.py -path INPUT_PATH -dataset DATASET_NAME -n MAX_NUM_CORE
 Example: python scheduler.py -p /mnt/avoton/fog/data/prova/splitDB/split8 -d Ecoli -n 8 
 
