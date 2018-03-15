@@ -76,7 +76,7 @@ def process_folder(queue):
                                 for index in range(4,len(splitted)): # everything that follows
                                         LCA_mapping += splitted[index] + " "
                                 LCA_mapping = LCA_mapping.rstrip()
-				label = "device.publish('air_filter/nanopore_2', JSON.stringify({\"kind\": \"" +  kind + "\", \"fasta_id\": \"" + fasta_id + "\", \"kraken_id\": " + kraken_id + " , \"bp\": " + bp + ", \"LCA_mapping\": \"" + LCA_mapping + "\" }"
+				label = "device.publish('air_filter/nanopore_2', JSON.stringify({\"kind\": \"" +  kind + "\", \"fasta_id\": \"" + fasta_id + "\", \"kraken_id\": " + kraken_id + " , \"bp\": " + bp + ", \"LCA_mapping\": \"" + LCA_mapping + "\" }));"
 				aws_file.write(label+ "\n")
 
 	os.getpid(), " done. Bye!"
